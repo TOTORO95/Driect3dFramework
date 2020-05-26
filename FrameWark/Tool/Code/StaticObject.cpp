@@ -12,6 +12,15 @@ CStaticObject::CStaticObject(LPDIRECT3DDEVICE9 pGraphicDev, wstring wstrName,_ui
 	m_ObjName = wstrName;
 }
 
+CStaticObject::CStaticObject(LPDIRECT3DDEVICE9 pGraphicDev, wstring wstrName, _uint uiIdx, TRANSFORM_INFO tInfo)
+	: Engine::CGameObject(pGraphicDev)
+{
+	m_uiIdx = uiIdx;
+	m_ObjName = wstrName;
+	m_tTransformInfo = tInfo;
+	m_bIsRespawn = true;
+}
+
 CStaticObject::~CStaticObject()
 {
 }
@@ -19,9 +28,7 @@ CStaticObject::~CStaticObject()
 HRESULT CStaticObject::Ready_GameObject()
 {
 	FAILED_CHECK_RETURN(Add_Component(), E_FAIL);
-	m_pTransformCom->Set_Scale(DefaultMeshScale);
-	m_pTransformCom->Set_Pos(DefaultObjectPos);
-
+	Set_TransformData();
 	return S_OK;
 }
 
@@ -62,7 +69,6 @@ HRESULT CStaticObject::Add_Component(void)
 	pComponent = m_pCalculatorCom = Engine::CCalculator::Create(m_pGraphicDev);
 	NULL_CHECK_RETURN(pComponent, E_FAIL);
 	m_pComponentMap[Engine::ID_STATIC].emplace(L"Com_Calculator", pComponent);
-
 	// collider
 	pComponent = m_pColliderCom = Engine::CCollider::Create(m_pGraphicDev,
 		m_pMeshCom->Get_VtxPos(),
@@ -74,6 +80,22 @@ HRESULT CStaticObject::Add_Component(void)
 	return S_OK;
 }
 
+void CStaticObject::Set_TransformData()
+{
+	if (m_bIsRespawn)
+	{
+		m_pTransformCom->m_vScale=m_tTransformInfo.vScale;
+		m_pTransformCom->m_vAngle= m_tTransformInfo.vRotation;
+		m_pTransformCom->m_vInfo[Engine::INFO_POS]= m_tTransformInfo.vPosition;
+	}
+	else
+	{
+		m_pTransformCom->Set_Scale(DEFAULT_MESH_SCALE);
+		m_pTransformCom->Set_Pos(INIT_VEC3);
+	}
+
+}
+
 CStaticObject * CStaticObject::Create(LPDIRECT3DDEVICE9 pGraphicDev, wstring wstrName,_uint uiIdx)
 {
 	CStaticObject*	pInstance = new CStaticObject(pGraphicDev, wstrName, uiIdx);
@@ -82,6 +104,16 @@ CStaticObject * CStaticObject::Create(LPDIRECT3DDEVICE9 pGraphicDev, wstring wst
 		Engine::Safe_Release(pInstance);
 
 	return pInstance;
+}
+CStaticObject * CStaticObject::Create(LPDIRECT3DDEVICE9 pGraphicDev, wstring wstrName, _uint uiIdx, TRANSFORM_INFO tInfo)
+{
+	CStaticObject*	pInstance = new CStaticObject(pGraphicDev, wstrName, uiIdx, tInfo);
+
+	if (FAILED(pInstance->Ready_GameObject()))
+		Engine::Safe_Release(pInstance);
+
+	return pInstance;
+
 }
 void CStaticObject::Free(void)
 {

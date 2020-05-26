@@ -24,8 +24,8 @@ CObjectTool::CObjectTool(CWnd* pParent /*=NULL*/)
 
 CObjectTool::~CObjectTool()
 {
-	//for_each(m_pGameObjectMap.begin(), m_pGameObjectMap.end(), Engine::CDeleteMap());
-	//m_pGameObjectMap.clear();
+	//for_each((*m_ppGameObjectMap).begin(), (*m_ppGameObjectMap).end(), Engine::CDeleteMap());
+	//(*m_ppGameObjectMap).clear();
 
 	//Engine::Safe_Release(m_pDevice);
 	//Engine::Safe_Release(m_pDeviceClass);
@@ -54,15 +54,19 @@ HRESULT CObjectTool::Update(const _float & fTimeDelta)
 {
 	if (m_pScene != nullptr)
 	{
-		m_pGameObjectMap = dynamic_cast<CTestStage*>(m_pScene)->Get_Layer(L"GameLogic")->Get_ObjectMap();
-		int iMapSize = m_pGameObjectMap.size();
+		int iMapSize = 0;
+		if (m_ppGameObjectMap == nullptr)
+			m_ppGameObjectMap =&dynamic_cast<CTestStage*>(m_pScene)->Get_Layer(L"GameLogic")->Get_ObjectMap();
+		else
+			iMapSize = (*m_ppGameObjectMap).size();
 		if (0 < iMapSize)
-			m_pCamera = dynamic_cast<CDynamicCamera*>((m_pGameObjectMap.find(L"DynamicCamera")->second));
+			m_pCamera = dynamic_cast<CDynamicCamera*>(((*m_ppGameObjectMap).find(L"DynamicCamera")->second));
 	}
 
 
 	if (m_pCamera != nullptr)
 	{
+			//TODO: 매쉬 피킹된곳에 오브젝트 두기
 		if (m_pCamera->IsPick())
 		{
 			m_pTransform = m_pCamera->Get_PickTransform();
@@ -100,6 +104,184 @@ HRESULT CObjectTool::Update(const _float & fTimeDelta)
 }
 
 
+HRESULT CObjectTool::Save_Data(const TCHAR * pFilePath)
+{
+	//ofstream fout;
+	//fout.open(wstrFilePath, ios::trunc);
+	//if (fout.fail())
+	//	return;
+
+	//for (auto pObj : m_pObjList)
+	//{
+	//	if (pObj->wstrObjectName.compare(L"") == 0)
+	//		continue;
+	//	fout << CW2A(pObj->wstrObjectName.c_str()) << endl;
+	//	fout << CW2A(pObj->wstrObjectKey.c_str()) << endl;
+	//	fout << CW2A(pObj->wstrStateKey.c_str()) << endl;
+	//	fout << pObj->IsAni << endl;
+	//	fout << pObj->ImageIDX << endl;
+	//	fout << pObj->eObjectType << endl;
+	//}
+	//fout.close();
+
+
+	return S_OK;
+}
+
+HRESULT CObjectTool::Load_Data(const TCHAR * pFilePath)
+{
+	
+	//HANDLE hFile = ::CreateFile(pFilePath, GENERIC_READ, 0, nullptr,
+	//	OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+
+	//if (INVALID_HANDLE_VALUE == hFile)
+	//	return;
+	//DWORD dwBytes = 0;
+	//OBJ_INFO* objInfo;
+	//D3DXVECTOR3 vPos;
+	//size_t iLen = 0;
+	//wchar_t* pString = nullptr;
+
+	//while (true)
+	//{
+	//	objInfo = new OBJ_INFO;
+
+	//	//ReadFile(hFile, &tTile, sizeof(TILE_INFO), &dwBytes, nullptr);
+	//	ReadFile(hFile, &iLen, sizeof(size_t), &dwBytes, nullptr);
+	//	pString = new wchar_t[iLen];
+	//	ReadFile(hFile, pString, sizeof(wchar_t) * iLen, &dwBytes, nullptr);
+	//	objInfo->wstrObjectName = pString;
+
+	//	ReadFile(hFile, &iLen, sizeof(size_t), &dwBytes, nullptr);
+	//	pString = new wchar_t[iLen];
+	//	ReadFile(hFile, pString, sizeof(wchar_t) * iLen, &dwBytes, nullptr);
+	//	objInfo->wstrObjectKey = pString;
+
+	//	ReadFile(hFile, &iLen, sizeof(size_t), &dwBytes, nullptr);
+	//	pString = new wchar_t[iLen];
+	//	ReadFile(hFile, pString, sizeof(wchar_t) * iLen, &dwBytes, nullptr);
+	//	objInfo->wstrStateKey = pString;
+
+	//	ReadFile(hFile, &objInfo->IsAni, sizeof(bool), &dwBytes, nullptr);
+	//	ReadFile(hFile, &objInfo->ImageIDX, sizeof(WORD), &dwBytes, nullptr);
+	//	ReadFile(hFile, &objInfo->eObjectType, sizeof(OBJECT_TYPE), &dwBytes, nullptr);
+	//	ReadFile(hFile, &vPos.x, sizeof(float), &dwBytes, nullptr);
+	//	ReadFile(hFile, &vPos.y, sizeof(float), &dwBytes, nullptr);
+	//	ReadFile(hFile, &vPos.z, sizeof(float), &dwBytes, nullptr);
+
+
+	//	if (0 == dwBytes)
+	//		break;
+
+	//	m_mObjects.insert(make_pair(objInfo, vPos));
+	//}
+
+	//CloseHandle(hFile);
+
+	return S_OK;
+}
+
+HRESULT CObjectTool::Save_Text(const TCHAR * pFilePath)
+{
+	ofstream fout;
+	fout.open(pFilePath, ios::trunc);
+	if (fout.fail())
+		return E_FAIL;
+	for (auto mapItem : (*m_ppGameObjectMap))
+	{
+		if (mapItem.first.compare(L"") == 0|| mapItem.first.compare(L"DynamicCamera")==0)
+				continue;
+		Engine::CTransform* pTransform = dynamic_cast<Engine::CTransform*>(mapItem.second->Get_Component(L"Com_Transform", Engine::ID_DYNAMIC));
+		
+		fout << CW2A(mapItem.first.c_str()) << endl;
+		fout << pTransform->m_vScale.x << endl;
+		fout << pTransform->m_vScale.y << endl;
+		fout << pTransform->m_vScale.z << endl;
+		fout << pTransform->m_vAngle.x << endl;
+		fout << pTransform->m_vAngle.y << endl;
+		fout << pTransform->m_vAngle.z << endl;
+		fout << pTransform->m_vInfo[Engine::INFO_POS].x << endl;
+		fout << pTransform->m_vInfo[Engine::INFO_POS].y << endl;
+		fout << pTransform->m_vInfo[Engine::INFO_POS].z<< endl;
+	}
+	fout.close();
+
+	return S_OK;
+}
+
+HRESULT CObjectTool::Load_Text(const TCHAR * pFilePathS)
+{
+	ifstream fin;
+
+	fin.open(pFilePathS);
+
+	if (fin.fail())
+		return E_FAIL;
+
+	wstring wstrTemp;
+	
+	CString csTemp;
+	char cTemp[MIN_STR];
+	Transform_Info tInfo;
+	while (!fin.eof())
+	{
+		//OBJ_INFO *temp = new OBJ_INFO;
+		D3DXVECTOR3 vPos;
+		
+		fin.getline(cTemp, MIN_STR); 
+		csTemp =  cTemp;
+		wstrTemp= csTemp.GetString();
+
+		if (wstrTemp.compare(L"") == 0)
+			break;
+		fin.getline(cTemp, MIN_STR); // 공백을 포함한 문장 단위(개행 단위)로 읽어오기.
+
+		tInfo.vScale.x = atof(cTemp);
+		fin.getline(cTemp, MIN_STR); // 공백을 포함한 문장 단위(개행 단위)로 읽어오기.
+		tInfo.vScale.y = atof(cTemp);
+		fin.getline(cTemp, MIN_STR);
+		tInfo.vScale.z = atof(cTemp);
+
+		fin.getline(cTemp, MIN_STR); // 공백을 포함한 문장 단위(개행 단위)로 읽어오기.
+		tInfo.vRotation.x = atof(cTemp);
+		fin.getline(cTemp, MIN_STR); // 공백을 포함한 문장 단위(개행 단위)로 읽어오기.
+		tInfo.vRotation.y = atof(cTemp);
+		fin.getline(cTemp, MIN_STR);
+		tInfo.vRotation.z = atof(cTemp);
+
+		fin.getline(cTemp, MIN_STR); // 공백을 포함한 문장 단위(개행 단위)로 읽어오기.
+		tInfo.vPosition.x = atof(cTemp);
+		fin.getline(cTemp, MIN_STR); // 공백을 포함한 문장 단위(개행 단위)로 읽어오기.
+		tInfo.vPosition.y = atof(cTemp);
+		fin.getline(cTemp, MIN_STR);
+		tInfo.vPosition.z = atof(cTemp);
+
+		_uint uiNameCnt = wstrTemp.find_last_of(L'_');
+		wstring wstrObjectName = wstrTemp.substr(0, uiNameCnt);
+
+		_uint uiObjIdx = 0;
+		uiObjIdx = _wtoi(wstrTemp.substr(uiNameCnt + 1, wstring::npos).c_str());
+
+		Engine::CGameObject*		pGameObject = nullptr;
+		pGameObject = CStaticObject::Create(m_pDevice, wstrObjectName, uiObjIdx,tInfo);
+
+
+		NULL_CHECK_RETURN(pGameObject,E_FAIL);
+		(*m_ppGameObjectMap).insert(make_pair(wstrTemp, pGameObject));
+
+		m_hInstStatic = m_InstanceTree.InsertItem(wstrTemp.c_str(), 0, 0, m_hStaticRoot, TVI_LAST);
+
+		//m_InstanceTree.get
+
+
+	}
+	fin.close();
+
+	return S_OK;
+}
+
+
+
 
 BEGIN_MESSAGE_MAP(CObjectTool, CDialogEx)
 	ON_WM_DROPFILES()
@@ -124,6 +306,9 @@ BEGIN_MESSAGE_MAP(CObjectTool, CDialogEx)
 	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN10, &CObjectTool::OnDeltaposSpinPositionX)
 	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN11, &CObjectTool::OnDeltaposSpinPositionY)
 	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN12, &CObjectTool::OnDeltaposSpinPositionZ)
+	ON_BN_CLICKED(IDC_ObjectSaveButton, &CObjectTool::OnBnClickedObjectSaveButton)
+	ON_BN_CLICKED(IDC_ObjectLoadButton, &CObjectTool::OnBnClickedObjectLoadButton)
+	ON_BN_CLICKED(IDC_StDeleteBT, &CObjectTool::OnBnClickedStDeleteBT)
 END_MESSAGE_MAP()
 
 
@@ -135,7 +320,7 @@ BOOL CObjectTool::OnInitDialog()
 	CDialogEx::OnInitDialog();
 	m_hStaticMesh = m_StaticTree.InsertItem(TEXT("StaticMesh"), 0, 0, TVI_ROOT, TVI_LAST);
 	m_hDynamicMesh = m_StaticTree.InsertItem(TEXT("DynamicMesh"), 0, 0, TVI_ROOT, TVI_LAST);
-	
+
 	if (m_pDeviceClass == nullptr)
 	{
 		CMainFrame* pFrameWnd = dynamic_cast<CMainFrame*>(::AfxGetApp()->GetMainWnd());
@@ -149,7 +334,7 @@ BOOL CObjectTool::OnInitDialog()
 	m_hStaticRoot = m_InstanceTree.InsertItem(TEXT("StaticObject"), 0, 0, TVI_ROOT, TVI_LAST);
 	m_hDynamicRoot = m_InstanceTree.InsertItem(TEXT("DynamicObject"), 0, 0, TVI_ROOT, TVI_LAST);
 
-	TCHAR szFileName[MAX_STR] = L"../../Client/Bin/Resource/Mesh";
+	TCHAR szFileName[MAX_STR] = L"../../Resource/Mesh";
 
 	CDirectoryMgr::ExtractPathInfo(szFileName, m_pMeshList);
 
@@ -164,7 +349,7 @@ BOOL CObjectTool::OnInitDialog()
 			if (pPathInfo->wstrGroup.find(L"Terrain") != wstring::npos)
 				m_hFloor = m_StaticTree.InsertItem(pPathInfo->wstrObjectType.c_str(), 0, 0, m_hMap, TVI_LAST);
 
-			wstring temp =pPathInfo->wstrObjectType + L".X";
+			wstring temp = pPathInfo->wstrObjectType + L".X";
 			if (Engine::Ready_Meshes(m_pDevice,
 				RESOURCE_STAGE,
 				pPathInfo->wstrObjectType.c_str(),
@@ -174,7 +359,7 @@ BOOL CObjectTool::OnInitDialog()
 			{
 				return false;
 			}
-			
+
 		}
 		else if (pPathInfo->wstrMeshType.compare(L"DynamicMesh") == 0)
 		{
@@ -192,7 +377,7 @@ BOOL CObjectTool::OnInitDialog()
 			{
 				return false;
 			}
-		
+
 		}
 
 
@@ -208,8 +393,8 @@ void CObjectTool::OnBnClickedMeshCreate()
 	HTREEITEM hCurITem = m_StaticTree.GetSelectedItem();
 	m_csSelectMesh = m_StaticTree.GetItemText(hCurITem);
 	TRANSFORM_INFO tTemp;
-	ZeroMemory(&tTemp,sizeof(TRANSFORM_INFO));
-	wstring wstrName=m_csSelectMesh;
+	ZeroMemory(&tTemp, sizeof(TRANSFORM_INFO));
+	wstring wstrName = m_csSelectMesh;
 	_uint uiChildCount = 0;
 	wstring wstrNameIdx;
 
@@ -228,13 +413,20 @@ void CObjectTool::OnBnClickedMeshCreate()
 
 	}
 
+
 	wstrNameIdx = wstrName + L"_" + to_wstring(uiChildCount);
-	dynamic_cast<CTestStage*>(m_pScene)->Add_StaticObject(wstrNameIdx, tTemp);
-	m_pGameObjectMap = Engine::Get_Layer(L"GameLogic")->Get_ObjectMap();
+	m_hInstStatic = m_InstanceTree.InsertItem(wstrNameIdx.c_str(), 0, 0, m_hStaticRoot, TVI_LAST);
 
-	m_hInstStatic= m_InstanceTree.InsertItem(wstrNameIdx.c_str(), 0, 0, m_hStaticRoot, TVI_LAST);
+	_uint uiObjIdx = 0;
+	wstring wstrObjEraseIdx = wstrNameIdx;
+	_uint uiEraseIdx = wstrObjEraseIdx.find_last_of(L'_');
+	uiObjIdx = _wtoi(wstrObjEraseIdx.substr(uiEraseIdx + 1, wstring::npos).c_str());
+	wstrObjEraseIdx.erase(uiEraseIdx);
 
-
+	Engine::CGameObject*		pGameObject = nullptr;
+	pGameObject = CStaticObject::Create(m_pDevice, wstrObjEraseIdx, uiObjIdx);
+	NULL_CHECK(pGameObject);
+	(*m_ppGameObjectMap).insert(make_pair(wstrNameIdx.c_str(), pGameObject));
 }
 
 
@@ -275,7 +467,7 @@ void CObjectTool::OnTvnSelchangedInstancetree(NMHDR *pNMHDR, LRESULT *pResult)
 	m_csSelectMesh = m_InstanceTree.GetItemText(hCurITem);
 	wstring wstr = m_csSelectMesh;
 
-	for (auto &pGameObject : m_pGameObjectMap)
+	for (auto &pGameObject : (*m_ppGameObjectMap))
 	{
 		if ( pGameObject.first.compare(wstr)==0)
 		{
@@ -394,7 +586,6 @@ void CObjectTool::OnEnChangeEditPositionZ()
 
 void CObjectTool::OnOK()
 {
-	// TODO: 여기에 특수화된 코드를 추가 및/또는 기본 클래스를 호출합니다.
 
 	//CDialogEx::OnOK();
 }
@@ -402,7 +593,6 @@ void CObjectTool::OnOK()
 
 void CObjectTool::OnCancel()
 {
-	// TODO: 여기에 특수화된 코드를 추가 및/또는 기본 클래스를 호출합니다.
 
 	//CDialogEx::OnCancel();
 }
@@ -553,4 +743,63 @@ void CObjectTool::OnDeltaposSpinPositionZ(NMHDR *pNMHDR, LRESULT *pResult)
 	if (m_pTransform)
 		m_pTransform->m_vInfo[Engine::INFO_POS].z = m_vPosition.z;
 	*pResult = 0;
+}
+
+
+void CObjectTool::OnBnClickedObjectSaveButton()
+{
+	CFileDialog dlgFile(FALSE, L".txt", L".txt", OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
+		L"Data Files(*.dat)|*.dat|Text Files(*.txt)|*.txt||",this);
+	
+	dlgFile.m_ofn.lpstrTitle = L"Object Save";
+
+	_tchar szPath[MAX_PATH];
+	GetCurrentDirectory(MAX_PATH, szPath);
+	::PathRemoveFileSpec(szPath);
+	::PathRemoveFileSpec(szPath);
+	CString csDataPath = szPath;
+	csDataPath += ".\\Resource.\\Data";
+	dlgFile.m_ofn.lpstrInitialDir = csDataPath;
+	if (IDOK == dlgFile.DoModal())
+	{
+		Save_Text(dlgFile.GetPathName());
+		//CString pathName = dlgFile.GetPathName();
+		//MessageBox(pathName);
+
+	}
+}
+
+
+void CObjectTool::OnBnClickedObjectLoadButton()
+{
+	CFileDialog dlgFile(TRUE, L".txt", L".txt", OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
+		L"Data Files(*.dat)|*.dat|Text Files(*.txt)|*.txt||", this);
+
+	dlgFile.m_ofn.lpstrTitle = L"Object Load";
+
+	_tchar szPath[MAX_PATH];
+	GetCurrentDirectory(MAX_PATH, szPath);
+	::PathRemoveFileSpec(szPath);
+	::PathRemoveFileSpec(szPath);
+	CString csDataPath = szPath;
+	csDataPath += ".\\Resource.\\Data";
+	dlgFile.m_ofn.lpstrInitialDir = csDataPath;
+
+	if (IDOK == dlgFile.DoModal())
+	{
+		Load_Text(dlgFile.GetPathName());
+
+	}
+}
+
+
+void CObjectTool::OnBnClickedStDeleteBT()
+{
+	wstring wstrInstName = m_csSelectMesh;
+
+	
+	Engine::Safe_Release((*m_ppGameObjectMap).find(wstrInstName)->second);
+	(*m_ppGameObjectMap).erase(wstrInstName);
+
+
 }

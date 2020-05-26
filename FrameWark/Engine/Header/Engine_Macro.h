@@ -10,7 +10,7 @@ namespace Engine
 
 	#define			BEGIN(NAMESPACE)		namespace NAMESPACE {
 	#define			END						}
-
+ 
 	#ifdef ENGINE_EXPORTS
 	#define ENGINE_DLL _declspec(dllexport)
 	#else

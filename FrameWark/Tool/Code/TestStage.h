@@ -27,7 +27,7 @@ private:
 	HRESULT		Ready_GameLogic_Layer(const _tchar* pLayerTag);
 	HRESULT		Ready_UI_Layer(const _tchar* pLayerTag) { return S_OK; }
 	HRESULT		Ready_Resource(LPDIRECT3DDEVICE9& pGraphicDev, RESOURCEID eMax);
-//public:
+
 public:
 	HRESULT     Add_StaticObject(wstring wstrObjName, TRANSFORM_INFO tInfo);
 	void		Set_MeshVec(vector<NavMesh*>& pMeshVec);

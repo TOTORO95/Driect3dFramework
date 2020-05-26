@@ -20,7 +20,7 @@ HRESULT CPlayer::Ready_GameObject(void)
 
 	m_pMeshCom->Set_AnimationSet(57);
 
-	m_pTransformCom->Set_Scale(DefaultMeshScale);
+	m_pTransformCom->Set_Scale(DEFAULT_MESH_SCALE);
 
 	return S_OK;
 }

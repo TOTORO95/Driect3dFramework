@@ -8,12 +8,12 @@
 #define MIN_STR 128
 #define NO_EVENT		0
 #define CHANGE_SCENE	1
-
+#define BRK __asm int 3;
 #define VTXCNTX 129
 #define VTXCNTZ 129
 #define VTXITV  1
-#define DefaultMeshScale 0.01f,0.01f,0.01f
-#define DefaultObjectPos 0.f,0.f,0.f
+#define DEFAULT_MESH_SCALE 0.01f,0.01f,0.01f
+#define INIT_VEC3 0.f,0.f,0.f
 
 #ifndef MSG_BOX
 #define	MSG_BOX(_message)			MessageBox(NULL, TEXT(_message), L"System Message", MB_OK)

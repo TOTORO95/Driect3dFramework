@@ -102,10 +102,9 @@ void CDirectoryMgr::ExtractPathInfo(const TCHAR * pFullPath, list<MESH_PATH*>& r
 				pPathInfo->wstrObjectType = ::PathFindFileName(szFilePath);
 
 				// MeshType
-				//::PathRemoveFileSpec(szFilePath);
+				::PathRemoveFileSpec(szFilePath);
 
 				// MeshGroup 
-				::PathRemoveFileSpec(szFilePath);
 				pPathInfo->wstrGroup = ::PathFindFileName(szFilePath);
 
 				// MeshMap 

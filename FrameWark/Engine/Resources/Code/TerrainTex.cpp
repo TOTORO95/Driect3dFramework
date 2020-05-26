@@ -44,7 +44,7 @@ HRESULT Engine::CTerrainTex::Ready_Buffer(const _ulong& dwCntX,
 
 	_ulong	dwByte = 0;
 
-	m_hFile = CreateFile(L"../../Client/Bin/Resource/Texture/Terrain/Height2.bmp", GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+	m_hFile = CreateFile(L"../../Resource/Texture/Terrain/Height2.bmp", GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
 
 	ReadFile(m_hFile, &m_fH, sizeof(BITMAPFILEHEADER), &dwByte, NULL);
 	ReadFile(m_hFile, &m_iH, sizeof(BITMAPINFOHEADER), &dwByte, NULL);

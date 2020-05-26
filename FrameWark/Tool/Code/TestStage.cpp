@@ -116,18 +116,13 @@ HRESULT CTestStage::Ready_GameLogic_Layer(const _tchar* pLayerTag)
 	m_pColLayer = Engine::CLayer::Create();
 	NULL_CHECK_RETURN(m_pColLayer, E_FAIL);
 
-	//m_pColLayer = Engine::CLayer::Create();
-	//NULL_CHECK_RETURN(m_pColLayer, E_FAIL);
 	Engine::CGameObject*		pGameObject = nullptr;
+	
 	// Terrain
 	pGameObject = CTerrain::Create(m_pGraphicDev);
 	NULL_CHECK_RETURN(pGameObject, E_FAIL);
 	FAILED_CHECK_RETURN(m_pLayer->Add_GameObject(L"Terrain", pGameObject), E_FAIL);
-	//
-	//pGameObject = CToolCamera::Create(m_pGraphicDev);
-	//NULL_CHECK_RETURN(pGameObject, E_FAIL);
-	//FAILED_CHECK_RETURN(m_pLayer->Add_GameObject(L"ToolCamera", pGameObject), E_FAIL);
-
+	
 
 	pGameObject = m_pCamera = CDynamicCamera::Create(m_pGraphicDev,
 		&_vec3(0.f, 5.f, -5.f),
@@ -149,21 +144,6 @@ HRESULT CTestStage::Ready_GameLogic_Layer(const _tchar* pLayerTag)
 	//NULL_CHECK_RETURN(pGameObject, E_FAIL);
 	//FAILED_CHECK_RETURN(pLayer->Add_GameObject(L"Sword", pGameObject), E_FAIL);
 
-
-	//Test 지우기 
-	//CCell *pCell;
-	//pGameObject = pCell= CCell::Create(m_pGraphicDev);
-	//NULL_CHECK_RETURN(pGameObject, E_FAIL);
-	//FAILED_CHECK_RETURN(m_pLayer->Add_GameObject(L"Cell1", pGameObject), E_FAIL);
-	//NAV_MESH* PNav =new NAV_MESH;
-	//PNav->fRadius = 1.0;
-	//PNav->uiNavMeshIdx = 0;
-	//PNav->vPoint1 = { 0,0,0 };
-	//PNav->vPoint2 = { 0.5,0,1 };
-	//PNav->vPoint3 = { 1,0,0 };
-	//pCell->Set_NavMesh(PNav);
-
-	//Test 지우기
 
 	m_pLayerMap.emplace(pLayerTag, m_pLayer);
 	return S_OK;
@@ -239,7 +219,7 @@ HRESULT CTestStage::Ready_Resource(LPDIRECT3DDEVICE9& pGraphicDev, RESOURCEID eM
 		RESOURCE_STAGE,
 		L"Texture_Test",
 		Engine::TEX_NORMAL,
-		L"../../Client/Bin/Resource/Texture/Terrain/Terrain0.png"),
+		L"../../Resource/Texture/Terrain/Terrain0.png"),
 		E_FAIL);
 
 	//// Stone
@@ -255,7 +235,7 @@ HRESULT CTestStage::Ready_Resource(LPDIRECT3DDEVICE9& pGraphicDev, RESOURCEID eM
 		RESOURCE_STAGE,
 		L"Mesh_Player",
 		Engine::TYPE_DYNAMIC,
-		L"../../Client/Bin/Resource/Mesh/DynamicMesh/PlayerXfile/",
+		L"../../Resource/Mesh/DynamicMesh/PlayerXfile/",
 		L"Player.X"),
 		E_FAIL);
 
@@ -272,28 +252,8 @@ HRESULT CTestStage::Ready_Resource(LPDIRECT3DDEVICE9& pGraphicDev, RESOURCEID eM
 }
 HRESULT CTestStage::Add_StaticObject(wstring wstrObjName, TRANSFORM_INFO tInfo)
 {
-	bool bIsObj = false;
 	_uint uiObjIdx = 0;
 	wstring wstrObjEraseIdx= wstrObjName;
-	//for (auto Obj : m_StaticObjMap)
-	//{
-	//	if (Obj.first.find(wstrObjName) != wstring::npos)
-	//	{
-	//		bIsObj = true;
-	//		uiObjIdx++;
-	//	}
-	//}
-
-	//wstrObjIdx = wstrObjIdx + L"_"+to_wstring(uiObjIdx);
-	//if(!bIsObj)
-	//	m_StaticObjMap.insert(make_pair(wstrObjIdx, tInfo));
-	//else
-	//{
-	//	//wstrTemp = (uiObjIdx);
-	//	m_StaticObjMap.insert(make_pair(wstrObjIdx, tInfo));
-	//}
-	//m_StaticObjMap.insert(make_pair(wstrObjName, tInfo));
-
 	_uint uiEraseIdx = wstrObjEraseIdx.find_last_of(L'_');
 	uiObjIdx = _wtoi(wstrObjEraseIdx.substr(uiEraseIdx + 1, wstring::npos).c_str());
 	wstrObjEraseIdx.erase(uiEraseIdx);
