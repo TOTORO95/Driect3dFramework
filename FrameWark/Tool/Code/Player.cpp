@@ -27,7 +27,7 @@ HRESULT CPlayer::Ready_GameObject(void)
 
 _int CPlayer::Update_GameObject(const _float& fTimeDelta)
 {
-	SetUp_OnTerrain();
+	//SetUp_OnTerrain();
 	Key_Input(fTimeDelta);
 
 	Engine::CGameObject::Update_GameObject(fTimeDelta);

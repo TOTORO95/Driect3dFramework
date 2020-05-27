@@ -216,6 +216,7 @@
     <ClInclude Include="..\Code\CameraTool.h" />
     <ClInclude Include="..\Code\DirectoryMgr.h" />
     <ClInclude Include="..\Code\DynamicCamera.h" />
+    <ClInclude Include="..\Code\KeyMgr.h" />
     <ClInclude Include="..\Code\MyForm.h" />
     <ClInclude Include="..\Code\NavMeshTool.h" />
     <ClInclude Include="..\Code\ObjectTool.h" />
@@ -236,6 +237,7 @@
     <ClCompile Include="..\Code\CameraTool.cpp" />
     <ClCompile Include="..\Code\DirectoryMgr.cpp" />
     <ClCompile Include="..\Code\DynamicCamera.cpp" />
+    <ClCompile Include="..\Code\KeyMgr.cpp" />
     <ClCompile Include="..\Code\MyForm.cpp" />
     <ClCompile Include="..\Code\NavMeshTool.cpp" />
     <ClCompile Include="..\Code\ObjectTool.cpp" />

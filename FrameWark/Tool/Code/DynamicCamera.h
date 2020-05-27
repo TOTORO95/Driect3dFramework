@@ -29,6 +29,7 @@ public:
 public:
 	_vec3						Get_PickPos() { return m_vPickPos; }
 	wstring						Get_PickName() { return m_wstrPickName; }
+	void						Init_PickName();
 	Engine::CTransform*			Get_PickTransform() {return m_pPickTransform;}
 	_bool						IsPick() { return m_bIsPick; }
 

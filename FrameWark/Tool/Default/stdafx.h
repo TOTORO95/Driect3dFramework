@@ -59,6 +59,8 @@ using namespace std;
 #include "Export_Function.h"
 #include "Defines.h"
 #include "Base.h"
+#include "KeyMgr.h"
+
 #ifdef _DEBUG
 
 #define _CRTDBG_MAP_ALLOC

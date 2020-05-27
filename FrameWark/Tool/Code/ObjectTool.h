@@ -6,6 +6,7 @@
 
 class CDynamicCamera;
 class CMyForm;
+class CKeyMgr;
 class CObjectTool : public CDialogEx
 {
 	DECLARE_DYNAMIC(CObjectTool)
@@ -75,6 +76,7 @@ public:
 public:
 	HRESULT								Update(const _float& fTimeDelta);
 private:
+	bool								Move_Obj();
 	HRESULT								Save_Data(const TCHAR * pFilePath);
 	HRESULT								Load_Data(const TCHAR * pFilePath);
 	HRESULT								Save_Text(const TCHAR * pFilePath);
@@ -85,14 +87,17 @@ private:
 	Engine::CGraphicDev*				m_pDeviceClass = nullptr;
 	LPDIRECT3DDEVICE9					m_pDevice = nullptr;
 	CMyForm*							m_pMyform = nullptr;
+	CKeyMgr*							m_pKeyManager = nullptr;
 	CDynamicCamera*						m_pCamera = nullptr;
 	Engine::CScene*						m_pScene = nullptr;
+	
 	list<MESH_PATH*>					m_pMeshList;
 	list<Effect_Path*>					m_pEffectList;
 	map<wstring, Engine::CGameObject*>*	m_ppGameObjectMap=nullptr;
 	Engine::CGameObject*				m_pGameObject;
 	Engine::CTransform*					m_pTransform=nullptr;
 
+	wstring								m_wstrSelectObject;
 	CString								m_csSelectMesh;
 	CString								m_csScale[3];
 	CString								m_csRotation[3];

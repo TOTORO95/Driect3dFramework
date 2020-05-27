@@ -62,6 +62,11 @@ _int CDynamicCamera::Update_GameObject(const _float& fTimeDelta)
 	return iExit;
 }
 
+void CDynamicCamera::Init_PickName()
+{
+	m_wstrPickName = L"No Pick";
+}
+
 void CDynamicCamera::Key_Input(const _float& fTimeDelta)
 {
 	_matrix	matCamWorld;
@@ -239,7 +244,8 @@ void CDynamicCamera::Picking_Mesh()
 											pStaticMesh->Get_Mesh()->GetFVF(),
 											m_pGraphicDev,
 											&pMesh);
-
+		if (pMesh == nullptr)
+			continue;
 		_matrix pObjWorldMat = pTransform->m_matWorld;
 		_matrix pObjMatIvs;
 		

@@ -117,12 +117,12 @@ HRESULT CTestStage::Ready_GameLogic_Layer(const _tchar* pLayerTag)
 	NULL_CHECK_RETURN(m_pColLayer, E_FAIL);
 
 	Engine::CGameObject*		pGameObject = nullptr;
-	
-	// Terrain
-	pGameObject = CTerrain::Create(m_pGraphicDev);
-	NULL_CHECK_RETURN(pGameObject, E_FAIL);
-	FAILED_CHECK_RETURN(m_pLayer->Add_GameObject(L"Terrain", pGameObject), E_FAIL);
-	
+	//
+	//// Terrain
+	//pGameObject = CTerrain::Create(m_pGraphicDev);
+	//NULL_CHECK_RETURN(pGameObject, E_FAIL);
+	//FAILED_CHECK_RETURN(m_pLayer->Add_GameObject(L"Terrain", pGameObject), E_FAIL);
+	//
 
 	pGameObject = m_pCamera = CDynamicCamera::Create(m_pGraphicDev,
 		&_vec3(0.f, 5.f, -5.f),
@@ -162,14 +162,14 @@ HRESULT CTestStage::Ready_Resource(LPDIRECT3DDEVICE9& pGraphicDev, RESOURCEID eM
 		Engine::BUFFER_RCTEX),
 		E_FAIL);
 	//// buffer
-	FAILED_CHECK_RETURN(Engine::Ready_Buffer(pGraphicDev,
-		RESOURCE_STATIC,
-		L"Buffer_TerrainTex",
-		Engine::BUFFER_TERRAINTEX,
-		VTXCNTX,
-		VTXCNTZ,
-		VTXITV),
-		E_FAIL);
+	//FAILED_CHECK_RETURN(Engine::Ready_Buffer(pGraphicDev,
+	//	RESOURCE_STATIC,
+	//	L"Buffer_TerrainTex",
+	//	Engine::BUFFER_TERRAINTEX,
+	//	VTXCNTX,
+	//	VTXCNTZ,
+	//	VTXITV),
+	//	E_FAIL);
 
 	FAILED_CHECK_RETURN(Engine::Ready_Buffer(pGraphicDev,
 		RESOURCE_STATIC,
@@ -214,13 +214,13 @@ HRESULT CTestStage::Ready_Resource(LPDIRECT3DDEVICE9& pGraphicDev, RESOURCEID eM
 		NULL),
 		E_FAIL);
 
-	// 텍스쳐
-	FAILED_CHECK_RETURN(Engine::Ready_Texture(pGraphicDev,
-		RESOURCE_STAGE,
-		L"Texture_Test",
-		Engine::TEX_NORMAL,
-		L"../../Resource/Texture/Terrain/Terrain0.png"),
-		E_FAIL);
+	//// 텍스쳐
+	//FAILED_CHECK_RETURN(Engine::Ready_Texture(pGraphicDev,
+	//	RESOURCE_STAGE,
+	//	L"Texture_Test",
+	//	Engine::TEX_NORMAL,
+	//	L"../../Resource/Texture/Terrain/Terrain0.png"),
+	//	E_FAIL);
 
 	//// Stone
 	//FAILED_CHECK_RETURN(Engine::Ready_Meshes(m_pGraphicDev,

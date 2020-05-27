@@ -52,6 +52,7 @@ void CObjectTool::DoDataExchange(CDataExchange* pDX)
 
 HRESULT CObjectTool::Update(const _float & fTimeDelta)
 {
+	m_pKeyManager->Update();
 	if (m_pScene != nullptr)
 	{
 		int iMapSize = 0;
@@ -63,12 +64,19 @@ HRESULT CObjectTool::Update(const _float & fTimeDelta)
 			m_pCamera = dynamic_cast<CDynamicCamera*>(((*m_ppGameObjectMap).find(L"DynamicCamera")->second));
 	}
 
-
 	if (m_pCamera != nullptr)
 	{
+		if (m_pKeyManager->KeyDown(KEY_G))
+			OnBnClickedMeshCreate();
+		if (m_pKeyManager->KeyDown(KEY_F))
+			OnBnClickedStDeleteBT();
+		Move_Obj();
+
+
 			//TODO: 매쉬 피킹된곳에 오브젝트 두기
 		if (m_pCamera->IsPick())
 		{
+			m_wstrSelectObject = m_pCamera->Get_PickName();
 			m_pTransform = m_pCamera->Get_PickTransform();
 
 			m_csScale[0].Format(_T("%f"), m_pTransform->m_vScale.x);
@@ -97,12 +105,50 @@ HRESULT CObjectTool::Update(const _float & fTimeDelta)
 
 			m_csPosition[2].Format(_T("%f"), m_pTransform->m_vInfo[Engine::INFO_POS].z);
 			SetDlgItemTextW(IDC_EditPositionZ, m_csPosition[2]);
+
+
 		}
 	}
-
+	
 	return S_OK;
 }
 
+
+bool CObjectTool::Move_Obj()
+{
+	
+	Engine::CGameObject* pGameObject;
+	if ( (*m_ppGameObjectMap).find(m_wstrSelectObject)!=(*m_ppGameObjectMap).end())
+	{
+		pGameObject = (*m_ppGameObjectMap).find(m_wstrSelectObject)->second;
+		Engine ::CTransform* pTransform = dynamic_cast<Engine::CTransform*>(pGameObject->Get_Component(L"Com_Transform", Engine::ID_DYNAMIC));
+		_vec3 vPos = pTransform->m_vInfo[Engine::INFO_POS];
+		_vec3 vRot = pTransform->m_vAngle;
+
+		if (Engine::Get_DIKeyState(DIK_H) & 0x80)
+			vPos.x -= 0.1;
+		if (Engine::Get_DIKeyState(DIK_J) & 0x80)
+			vPos.z -= 0.1;
+		if (Engine::Get_DIKeyState(DIK_K) & 0x80)
+			vPos.x += 0.1;
+		if (Engine::Get_DIKeyState(DIK_U) & 0x80)
+			vPos.z += 0.1;
+		if(m_pKeyManager->KeyUp(KEY_NUM1))
+			vRot.y -= 90;
+		if (m_pKeyManager->KeyUp(KEY_NUM2))
+			vRot.y += 90;
+		if (Engine::Get_DIKeyState(DIK_Y) & 0x80)
+			vRot.y -= 0.1;
+		if (Engine::Get_DIKeyState(DIK_I) & 0x80)
+			vRot.y += 0.1;
+		if (Engine::Get_DIKeyState(DIK_SPACE) & 0x80)
+			vPos.y += 0.1;
+		pTransform->m_vInfo[Engine::INFO_POS] = vPos;
+		pTransform->m_vAngle = vRot;
+		return true;
+	}
+	return false; 
+}
 
 HRESULT CObjectTool::Save_Data(const TCHAR * pFilePath)
 {
@@ -189,7 +235,7 @@ HRESULT CObjectTool::Save_Text(const TCHAR * pFilePath)
 		return E_FAIL;
 	for (auto mapItem : (*m_ppGameObjectMap))
 	{
-		if (mapItem.first.compare(L"") == 0|| mapItem.first.compare(L"DynamicCamera")==0)
+		if (mapItem.first.compare(L"") == 0|| mapItem.first.compare(L"DynamicCamera")==0|| mapItem.first.compare(L"Player") == 0)
 				continue;
 		Engine::CTransform* pTransform = dynamic_cast<Engine::CTransform*>(mapItem.second->Get_Component(L"Com_Transform", Engine::ID_DYNAMIC));
 		
@@ -225,7 +271,6 @@ HRESULT CObjectTool::Load_Text(const TCHAR * pFilePathS)
 	Transform_Info tInfo;
 	while (!fin.eof())
 	{
-		//OBJ_INFO *temp = new OBJ_INFO;
 		D3DXVECTOR3 vPos;
 		
 		fin.getline(cTemp, MIN_STR); 
@@ -270,6 +315,7 @@ HRESULT CObjectTool::Load_Text(const TCHAR * pFilePathS)
 		(*m_ppGameObjectMap).insert(make_pair(wstrTemp, pGameObject));
 
 		m_hInstStatic = m_InstanceTree.InsertItem(wstrTemp.c_str(), 0, 0, m_hStaticRoot, TVI_LAST);
+
 
 		//m_InstanceTree.get
 
@@ -338,6 +384,7 @@ BOOL CObjectTool::OnInitDialog()
 		m_pDeviceClass = m_pMyform->Get_DeviceClass();
 		m_pDevice = m_pMyform->Get_Device();
 		m_pScene = m_pMyform->Get_Scene();
+		m_pKeyManager = CKeyMgr::GetInstance();
 	}
 	m_hStaticRoot = m_InstanceTree.InsertItem(TEXT("StaticObject"), 0, 0, TVI_ROOT, TVI_LAST);
 	m_hDynamicRoot = m_InstanceTree.InsertItem(TEXT("DynamicObject"), 0, 0, TVI_ROOT, TVI_LAST);
@@ -355,64 +402,74 @@ BOOL CObjectTool::OnInitDialog()
 		if (pPathInfo->wstrMeshType.compare(L"StaticMesh") == 0)
 		{
 			bool bIsMap = false;
-			if (m_StaticTree.ItemHasChildren(m_hStaticRoot))
+			if (m_StaticTree.ItemHasChildren(m_hStaticMesh))
 			{
-				m_hMap = m_StaticTree.GetChildItem(m_hStaticRoot);
+				m_hMap = m_StaticTree.GetChildItem(m_hStaticMesh);
 				CString csMap = m_StaticTree.GetItemText(m_hMap);
-
-				if (csMap.Find(pPathInfo->wstrMap.c_str()) != -1) //있음
+				bool bIsGroup = false;
+				if (csMap.Find(pPathInfo->wstrMap.c_str()) != -1) //같은 맵 있음
 				{
-					if (!pPathInfo->wstrGroup.empty())
+					bIsMap = true;
+					//그룹검사
+					m_hGroup = m_StaticTree.GetChildItem(m_hMap);
+					CString csGroup = m_StaticTree.GetItemText(m_hGroup);
+					if (csGroup.Find(pPathInfo->wstrGroup.c_str()) != -1) //같은 그룹 잇음
 					{
-						bIsMap = true;
-						m_hGroup = m_StaticTree.InsertItem(pPathInfo->wstrGroup.c_str(), 0, 0, m_hMap, TVI_LAST);
-						m_hFloor = m_StaticTree.InsertItem(pPathInfo->wstrObjectType.c_str(), 0, 0, m_hGroup, TVI_LAST);
+						bIsGroup = true;
+						m_hFloor = m_StaticTree.InsertItem(pPathInfo->wstrObjectType.c_str(), 0, 0, m_hGroup, TVI_SORT);
+					}
+					if(!bIsGroup)
+					{
+						while (m_hGroup = m_StaticTree.GetNextSiblingItem(m_hGroup))//
+						{
+							csGroup = m_StaticTree.GetItemText(m_hGroup);
+							if (csGroup.Find(pPathInfo->wstrGroup.c_str()) != -1) //같은 그룹 잇음
+							{
+								bIsGroup = true;
+								m_hFloor = m_StaticTree.InsertItem(pPathInfo->wstrObjectType.c_str(), 0, 0, m_hGroup, TVI_SORT);
+							}
+						}
+					}
+					if(!bIsGroup)
+					{
+						m_hGroup = m_StaticTree.InsertItem(pPathInfo->wstrGroup.c_str(), 0, 0, m_hMap, TVI_SORT);
+						m_hFloor = m_StaticTree.InsertItem(pPathInfo->wstrObjectType.c_str(), 0, 0, m_hGroup, TVI_SORT);
 					}
 
 				}
-
-				while (m_hMap = m_StaticTree.GetNextSiblingItem(m_hMap))//
+				if (!bIsMap) 
 				{
-					csMap = m_StaticTree.GetItemText(m_hMap);
-					if (csMap.Find(pPathInfo->wstrMap.c_str()) != -1) //있음
+					while ( m_hMap = m_StaticTree.GetNextSiblingItem(m_hMap))//
 					{
-						if (!pPathInfo->wstrGroup.empty())
+						csMap = m_StaticTree.GetItemText(m_hMap);
+						if (csMap.Find(pPathInfo->wstrMap.c_str()) != -1) //있음
 						{
 							bIsMap = true;
-							m_hGroup = m_StaticTree.InsertItem(pPathInfo->wstrGroup.c_str(), 0, 0, m_hMap, TVI_LAST);
-							m_hFloor = m_StaticTree.InsertItem(pPathInfo->wstrObjectType.c_str(), 0, 0, m_hGroup, TVI_LAST);
+							m_hGroup = m_StaticTree.InsertItem(pPathInfo->wstrGroup.c_str(), 0, 0, m_hMap, TVI_SORT);
+							m_hFloor = m_StaticTree.InsertItem(pPathInfo->wstrObjectType.c_str(), 0, 0, m_hGroup, TVI_SORT);
 						}
 
 					}
-
 				}
 
 			}
-			if (!bIsMap)
+			else //같은 맵 없음
 			{
-				if (!pPathInfo->wstrGroup.empty())
-				{
-					m_hMap = m_StaticTree.GetChildItem(m_hStaticRoot);
-					m_hMap = m_StaticTree.InsertItem(pPathInfo->wstrMap.c_str(), 0, 0, m_hStaticMesh, TVI_LAST);
-					m_hGroup = m_StaticTree.InsertItem(pPathInfo->wstrGroup.c_str(), 0, 0, m_hMap, TVI_LAST);
-					m_hFloor = m_StaticTree.InsertItem(pPathInfo->wstrObjectType.c_str(), 0, 0, m_hGroup, TVI_LAST);
-				}
-				else
-				{
-					m_hFloor = m_StaticTree.InsertItem(pPathInfo->wstrObjectType.c_str(), 0, 0, m_hStaticMesh, TVI_LAST);
-				}
-
+				m_hMap = m_StaticTree.InsertItem(pPathInfo->wstrMap.c_str(), 0, 0, m_hStaticMesh, TVI_SORT);
+				m_hGroup = m_StaticTree.InsertItem(pPathInfo->wstrGroup.c_str(), 0, 0, m_hMap, TVI_SORT);
+				m_hFloor = m_StaticTree.InsertItem(pPathInfo->wstrObjectType.c_str(), 0, 0, m_hGroup, TVI_SORT);
 			}
 
-			Ready_Mesh(pPathInfo);
+			Ready_Mesh(pPathInfo);//스태틱매쉬 
 		}
 		else if (pPathInfo->wstrMeshType.compare(L"DynamicMesh") == 0)
 		{
-			m_hEtc = m_StaticTree.InsertItem(pPathInfo->wstrObjectType.c_str(), 0, 0, m_hDynamicMesh, TVI_LAST);
+			m_hEtc = m_StaticTree.InsertItem(pPathInfo->wstrObjectType.c_str(), 0, 0, m_hDynamicMesh, TVI_SORT);
 		}
 		else
 		{
-			m_hEtc = m_StaticTree.InsertItem(pPathInfo->wstrObjectType.c_str(), 0, 0, m_hStaticMesh, TVI_LAST);
+			//m_hEtc = m_StaticTree.InsertItem(pPathInfo->wstrObjectType.c_str(), 0, 0, m_hStaticMesh, TVI_SORT);
+			
 			if (Engine::Ready_Meshes(m_pDevice,
 				RESOURCE_STAGE,
 				pPathInfo->wstrObjectType.c_str(),
@@ -442,7 +499,6 @@ void CObjectTool::OnBnClickedMeshCreate()
 	wstring wstrName = m_csSelectMesh;
 	_uint uiChildCount = 0;
 	wstring wstrNameIdx;
-
 	if (m_InstanceTree.ItemHasChildren(m_hStaticRoot))
 	{
 		HTREEITEM hChild = m_InstanceTree.GetChildItem(m_hStaticRoot);
@@ -469,8 +525,24 @@ void CObjectTool::OnBnClickedMeshCreate()
 	wstrObjEraseIdx.erase(uiEraseIdx);
 
 	Engine::CGameObject*		pGameObject = nullptr;
-	pGameObject = CStaticObject::Create(m_pDevice, wstrObjEraseIdx, uiObjIdx);
-	NULL_CHECK(pGameObject);
+	
+	if (m_pCamera->IsPick())
+	{
+		TRANSFORM_INFO tInfo;
+		tInfo.vPosition	= m_pCamera->Get_PickPos();
+		tInfo.vRotation = { INIT_VEC3 };
+		tInfo.vScale	= { DEFAULT_MESH_SCALE};
+
+		pGameObject = CStaticObject::Create(m_pDevice, wstrObjEraseIdx, uiObjIdx, tInfo);
+		NULL_CHECK(pGameObject);
+	}
+	else
+	{
+		pGameObject = CStaticObject::Create(m_pDevice, wstrObjEraseIdx, uiObjIdx);
+		NULL_CHECK(pGameObject);
+	}
+	
+
 	(*m_ppGameObjectMap).insert(make_pair(wstrNameIdx.c_str(), pGameObject));
 }
 
@@ -631,8 +703,6 @@ void CObjectTool::OnEnChangeEditPositionZ()
 
 void CObjectTool::OnOK()
 {
-
-	//CDialogEx::OnOK();
 }
 
 
@@ -840,11 +910,29 @@ void CObjectTool::OnBnClickedObjectLoadButton()
 
 void CObjectTool::OnBnClickedStDeleteBT()
 {
-	wstring wstrInstName = m_csSelectMesh;
+	wstring wstrInstName = m_pCamera->Get_PickName();
+	if (wstrInstName.compare(L"No Pick")==0)
+		return;
+	if (dynamic_cast<CStaticObject*>((*m_ppGameObjectMap).find(wstrInstName)->second) != nullptr)
+	{
+		if (m_InstanceTree.ItemHasChildren(m_hStaticRoot))
+		{
+			HTREEITEM hChild = m_InstanceTree.GetChildItem(m_hStaticRoot);
+			CString csText = m_InstanceTree.GetItemText(hChild);
+			if (csText.Compare(wstrInstName.c_str()) == 0) //있음
+				m_InstanceTree.DeleteItem(hChild);
+			while (hChild = m_InstanceTree.GetNextSiblingItem(hChild))//
+			{
+				csText = m_InstanceTree.GetItemText(hChild);
+				if (csText.Compare(wstrInstName.c_str()) == 0) //있음
+					m_InstanceTree.DeleteItem(hChild);
+			}
+		}
 
+	}
 	
 	Engine::Safe_Release((*m_ppGameObjectMap).find(wstrInstName)->second);
 	(*m_ppGameObjectMap).erase(wstrInstName);
-
+	m_pCamera->Init_PickName();
 
 }

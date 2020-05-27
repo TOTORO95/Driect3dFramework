@@ -70,6 +70,9 @@
     <Filter Include="50. NavMesh\00. Cell">
       <UniqueIdentifier>{a1df7deb-c73c-4ac2-bedc-788dd5a619ec}</UniqueIdentifier>
     </Filter>
+    <Filter Include="90. Managers\00. KeyManager">
+      <UniqueIdentifier>{dbecf580-f051-4052-813b-018266be1e2e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Tool.h">
@@ -126,6 +129,9 @@
     <ClInclude Include="..\Code\NavMeshTool.h">
       <Filter>03. View\00. MyForm\00. Tab\02. NaviTab</Filter>
     </ClInclude>
+    <ClInclude Include="..\Code\KeyMgr.h">
+      <Filter>90. Managers\00. KeyManager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Tool.cpp">
@@ -175,6 +181,9 @@
     </ClCompile>
     <ClCompile Include="..\Code\NavMeshTool.cpp">
       <Filter>03. View\00. MyForm\00. Tab\02. NaviTab</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Code\KeyMgr.cpp">
+      <Filter>90. Managers\00. KeyManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
