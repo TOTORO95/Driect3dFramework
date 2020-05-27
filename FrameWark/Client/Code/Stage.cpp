@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include "Stage.h"
 #include "Export_Function.h"
-
+#include <fstream>
+#include "StaticObject.h"
 CStage::CStage(LPDIRECT3DDEVICE9 pGraphicDev)
 	: Engine::CScene(pGraphicDev)
 {
@@ -97,10 +98,10 @@ HRESULT CStage::Ready_GameLogic_Layer(const _tchar* pLayerTag)
 	NULL_CHECK_RETURN(pGameObject, E_FAIL);
 	FAILED_CHECK_RETURN(pLayer->Add_GameObject(L"SkyBox", pGameObject), E_FAIL);
 
-	// Terrain
-	pGameObject = CTerrain::Create(m_pGraphicDev);
-	NULL_CHECK_RETURN(pGameObject, E_FAIL);
-	FAILED_CHECK_RETURN(pLayer->Add_GameObject(L"Terrain", pGameObject), E_FAIL);
+	//// Terrain
+	//pGameObject = CTerrain::Create(m_pGraphicDev);
+	//NULL_CHECK_RETURN(pGameObject, E_FAIL);
+	//FAILED_CHECK_RETURN(pLayer->Add_GameObject(L"Terrain", pGameObject), E_FAIL);
 
 	// dynamicCamera
 	pGameObject = CDynamicCamera::Create(m_pGraphicDev,
@@ -137,18 +138,22 @@ HRESULT CStage::Ready_GameLogic_Layer(const _tchar* pLayerTag)
 
 	//// Stone
 
-	for (_uint i = 0; i < 3; ++i)
-	{
-		pGameObject = CStone::Create(m_pGraphicDev, i);
-		NULL_CHECK_RETURN(pGameObject, E_FAIL);
-		FAILED_CHECK_RETURN(pLayer->Add_GameObject(L"Stone", pGameObject), E_FAIL);
+	//for (_uint i = 0; i < 3; ++i)
+	//{
+	//	pGameObject = CStone::Create(m_pGraphicDev, i);
+	//	NULL_CHECK_RETURN(pGameObject, E_FAIL);
+	//	FAILED_CHECK_RETURN(pLayer->Add_GameObject(L"Stone", pGameObject), E_FAIL);
 
-	}
+	//}
 
-	// Sword
-	pGameObject = CSword::Create(m_pGraphicDev, 0);
-	NULL_CHECK_RETURN(pGameObject, E_FAIL);
-	FAILED_CHECK_RETURN(pLayer->Add_GameObject(L"Sword", pGameObject), E_FAIL);
+	//// Sword
+	//pGameObject = CSword::Create(m_pGraphicDev, 0);
+	//NULL_CHECK_RETURN(pGameObject, E_FAIL);
+	//FAILED_CHECK_RETURN(pLayer->Add_GameObject(L"Sword", pGameObject), E_FAIL);
+	m_ppGameObjectMap = &pLayer->Get_ObjectMap();
+	
+	Load_Text(L"../../Resource/Data/Base.txt");
+
 
 	m_pLayerMap.emplace(pLayerTag, pLayer);	
 
@@ -240,3 +245,73 @@ HRESULT CStage::Ready_LightInfo(void)
 	return S_OK;
 }
 
+
+HRESULT CStage::Load_Text(const _tchar * pFilePath)
+{
+	ifstream fin;
+
+	fin.open(pFilePath);
+
+	if (fin.fail())
+		return E_FAIL;
+	wstring wstrTemp;
+	char cTemp[MIN_STR];
+	Transform_Info tInfo;
+	while (!fin.eof())
+	{
+		D3DXVECTOR3 vPos;
+
+		fin.getline(cTemp, MIN_STR);
+
+		wstring wstrConvert(cTemp, &cTemp[MIN_STR]);
+		wstrTemp = wstrConvert;
+		if (wstrTemp.compare(L"") == 0)
+			break;
+
+		fin.getline(cTemp, MIN_STR); // 공백을 포함한 문장 단위(개행 단위)로 읽어오기.
+		tInfo.vScale.x = atof(cTemp);
+		fin.getline(cTemp, MIN_STR); // 공백을 포함한 문장 단위(개행 단위)로 읽어오기.
+		tInfo.vScale.y = atof(cTemp);
+		fin.getline(cTemp, MIN_STR);
+		tInfo.vScale.z = atof(cTemp);
+
+		fin.getline(cTemp, MIN_STR); // 공백을 포함한 문장 단위(개행 단위)로 읽어오기.
+		tInfo.vRotation.x = atof(cTemp);
+		fin.getline(cTemp, MIN_STR); // 공백을 포함한 문장 단위(개행 단위)로 읽어오기.
+		tInfo.vRotation.y = atof(cTemp);
+		fin.getline(cTemp, MIN_STR);
+		tInfo.vRotation.z = atof(cTemp);
+
+		fin.getline(cTemp, MIN_STR); // 공백을 포함한 문장 단위(개행 단위)로 읽어오기.
+		tInfo.vPosition.x = atof(cTemp);
+		fin.getline(cTemp, MIN_STR); // 공백을 포함한 문장 단위(개행 단위)로 읽어오기.
+		tInfo.vPosition.y = atof(cTemp);
+		fin.getline(cTemp, MIN_STR);
+		tInfo.vPosition.z = atof(cTemp);
+
+
+		//TODO: Check FindLastOF 안됨?
+		_uint uiNameCnt = wstrTemp.find_last_of(L'_');
+		wstring wstrObjectName = wstrTemp.substr(0, uiNameCnt);
+
+		_uint uiObjIdx = 0;
+		uiObjIdx = _wtoi(wstrTemp.substr(uiNameCnt + 1, wstring::npos).c_str());
+
+		Engine::CGameObject*		pGameObject = nullptr;
+		pGameObject = CStaticObject::Create(m_pGraphicDev, wstrObjectName, uiObjIdx, tInfo);
+
+
+		NULL_CHECK_RETURN(pGameObject, E_FAIL);
+
+		(*m_ppGameObjectMap).insert(make_pair(wstrTemp, pGameObject));
+		//m_hInstStatic = m_InstanceTree.InsertItem(wstrTemp.c_str(), 0, 0, m_hStaticRoot, TVI_LAST);
+
+
+		//m_InstanceTree.get
+
+
+	}
+	fin.close();
+
+	return S_OK;
+}

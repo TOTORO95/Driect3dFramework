@@ -110,4 +110,3 @@ CLayer * CScene::Get_Layer(const _tchar * pLayerTag)
 
 	return iter->second;
 }
-

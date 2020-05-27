@@ -27,7 +27,7 @@ HRESULT CPlayer::Ready_GameObject(void)
 
 _int CPlayer::Update_GameObject(const _float& fTimeDelta)
 {
-	SetUp_OnTerrain();
+	//SetUp_OnTerrain();
 	Key_Input(fTimeDelta);
 
 	Engine::CGameObject::Update_GameObject(fTimeDelta);
@@ -108,9 +108,9 @@ void CPlayer::Key_Input(const _float& fTimeDelta)
 
 	if (Engine::Get_DIMouseState(Engine::DIM_LB) & 0x80)
 	{
-		_vec3		vPickPos = PickUp_OnTerrain();
+		//_vec3		vPickPos = PickUp_OnTerrain();
 
-		m_pTransformCom->Move_TargetPos(&vPickPos, m_fSpeed, fTimeDelta);
+		//m_pTransformCom->Move_TargetPos(&vPickPos, m_fSpeed, fTimeDelta);
 	}
 
 	if (Engine::Get_DIKeyState(DIK_RETURN) & 0x80)

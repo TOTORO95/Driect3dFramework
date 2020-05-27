@@ -79,6 +79,12 @@
     <Filter Include="02. GameObejct\01. Stage\05. Sword">
       <UniqueIdentifier>{218cca05-7925-42d9-aaa3-cc2249ab3c90}</UniqueIdentifier>
     </Filter>
+    <Filter Include="10.Manager">
+      <UniqueIdentifier>{29399895-2bc0-444e-bf8d-b57b3e8cae2f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. GameObejct\02. Public\02 StaticObject">
+      <UniqueIdentifier>{2d805841-3269-4960-884d-8c6f7bc5ded2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -135,6 +141,9 @@
     <ClInclude Include="..\Code\Sword.h">
       <Filter>02. GameObejct\01. Stage\05. Sword</Filter>
     </ClInclude>
+    <ClInclude Include="..\Code\StaticObject.h">
+      <Filter>02. GameObejct\02. Public\02 StaticObject</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -187,6 +196,9 @@
     </ClCompile>
     <ClCompile Include="..\Code\Sword.cpp">
       <Filter>02. GameObejct\01. Stage\05. Sword</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Code\StaticObject.cpp">
+      <Filter>02. GameObejct\02. Public\02 StaticObject</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

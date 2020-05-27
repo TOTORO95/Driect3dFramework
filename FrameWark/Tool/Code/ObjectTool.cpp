@@ -396,6 +396,22 @@ BOOL CObjectTool::OnInitDialog()
 	wstring wstrCombined = L"";
 	TCHAR szCount[MIN_STR] = L"";
 
+	ofstream fout;
+	fout.open(L"../../Resource/Data/PathInfo.txt", ios::trunc);
+	if (fout.fail())
+		return E_FAIL;
+	for (auto pPathInfo : m_pMeshList) //패스 저장
+	{
+		fout << CW2A(pPathInfo->wstrGroup.c_str()) << endl;
+		fout << CW2A(pPathInfo->wstrMap.c_str()) << endl;
+		fout << CW2A(pPathInfo->wstrMeshType.c_str()) << endl;
+		fout << CW2A(pPathInfo->wstrName.c_str()) << endl;
+		fout << CW2A(pPathInfo->wstrObjectType.c_str()) << endl;
+		fout << CW2A(pPathInfo->wstrRelative.c_str()) << endl;
+	}
+		fout.close();
+
+
 	for (auto pPathInfo : m_pMeshList)
 	{
 		//bool f;

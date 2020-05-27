@@ -93,7 +93,7 @@ private:
 	
 	list<MESH_PATH*>					m_pMeshList;
 	list<Effect_Path*>					m_pEffectList;
-	map<wstring, Engine::CGameObject*>*	m_ppGameObjectMap=nullptr;
+	map<wstring, Engine::CGameObject*>*	m_ppGameObjectMap = nullptr;
 	Engine::CGameObject*				m_pGameObject;
 	Engine::CTransform*					m_pTransform=nullptr;
 

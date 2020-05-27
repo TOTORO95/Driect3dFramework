@@ -114,14 +114,14 @@ HRESULT CLogo::Ready_Resource(LPDIRECT3DDEVICE9& pGraphicDev, RESOURCEID eMax)
 											RESOURCE_LOGO,
 											L"Texture_Logo",
 											Engine::TEX_NORMAL,
-											L"../Bin/Resource/Texture/LogoBack/LogoBack_%d.png", 38),
+											L"../../Resource/Texture/LogoBack/LogoBack_%d.png", 38),
 											E_FAIL);
 
 	FAILED_CHECK_RETURN(Engine::Ready_Texture(pGraphicDev,
 											RESOURCE_LOGO,
 											L"Texture_Player", 
 											Engine::TEX_NORMAL, 
-											L"../Bin/Resource/Texture/Player/Ma.jpg"), 
+											L"../../Resource/Texture/Player/Ma.jpg"), 
 											E_FAIL);
 
 	return S_OK;

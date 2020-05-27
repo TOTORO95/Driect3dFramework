@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "Loading.h"
-
+#include <fstream>
 #include "Export_Function.h"
-
+#include "DirectoryMgr.h"
 CLoading::CLoading(LPDIRECT3DDEVICE9 pGraphicDev)
 	: m_pGraphicDev(pGraphicDev)
 	, m_bFinish(false)
@@ -76,19 +76,19 @@ _uint CLoading::Loading_ForStage(void)
 	
 	// 텍스쳐
 
-	FAILED_CHECK_RETURN(Engine::Ready_Texture(m_pGraphicDev,
-												RESOURCE_STAGE,
-												L"Texture_Terrain",
-												Engine::TEX_NORMAL,
-												L"../Bin/Resource/Texture/Terrain/Grass_%d.tga", 2),
-												E_FAIL);
+	//FAILED_CHECK_RETURN(Engine::Ready_Texture(m_pGraphicDev,
+	//											RESOURCE_STAGE,
+	//											L"Texture_Terrain",
+	//											Engine::TEX_NORMAL,
+	//											L"../Bin/Resource/Texture/Terrain/Grass_%d.tga", 2),
+	//											E_FAIL);
 
 
 	FAILED_CHECK_RETURN(Engine::Ready_Texture(m_pGraphicDev,
 												RESOURCE_STAGE,
 												L"Texture_Cube",
 												Engine::TEX_CUBE,
-												L"../Bin/Resource/Texture/SkyBox/burger%d.dds",
+												L"../../Resource/Texture/SkyBox/burger%d.dds",
 												4),
 												E_FAIL);
 
@@ -96,14 +96,14 @@ _uint CLoading::Loading_ForStage(void)
 												RESOURCE_STAGE,
 												L"Texture_Player",
 												Engine::TEX_NORMAL,
-												L"../Bin/Resource/Texture/Player%d.png"),
+												L"../../Resource/Texture/Player%d.png"),
 												E_FAIL);
 
 	FAILED_CHECK_RETURN(Engine::Ready_Texture(m_pGraphicDev,
 												RESOURCE_STAGE,
 												L"Texture_Monster",
 												Engine::TEX_NORMAL,
-												L"../Bin/Resource/Texture/Monster%d.png"),
+												L"../../Resource/Texture/Monster%d.png"),
 												E_FAIL);
 	
 	lstrcpy(m_szLoading, L"Mesh Loading.............................");
@@ -113,7 +113,7 @@ _uint CLoading::Loading_ForStage(void)
 												RESOURCE_STAGE,
 												L"Mesh_Stone", 
 												Engine::TYPE_STATIC, 
-												L"../Bin/Resource/Mesh/StaticMesh/Shop/Terrain/SM_LawnL2/",
+												L"../../Resource/Mesh/StaticMesh/Shop/Terrain/SM_LawnL2/",
 												L"SM_LawnL2.X"),
 												E_FAIL);
 
@@ -121,18 +121,18 @@ _uint CLoading::Loading_ForStage(void)
 		RESOURCE_STAGE,
 		L"Mesh_Player",
 		Engine::TYPE_DYNAMIC,
-		L"../Bin/Resource/Mesh/DynamicMesh/PlayerXfile/",
+		L"../../Resource/Mesh/DynamicMesh/PlayerXfile/",
 		L"Player.X"),
 		E_FAIL);
 
-	FAILED_CHECK_RETURN(Engine::Ready_Meshes(m_pGraphicDev,
-		RESOURCE_STAGE,
-		L"Mesh_Sword",
-		Engine::TYPE_STATIC,
-		L"../Bin/Resource/Mesh/StaticMesh/Sword/",
-		L"Sword.X"),
-		E_FAIL);
-
+	//FAILED_CHECK_RETURN(Engine::Ready_Meshes(m_pGraphicDev,
+	//	RESOURCE_STAGE,
+	//	L"Mesh_Sword",
+	//	Engine::TYPE_STATIC,
+	//	L"../../Resource/Mesh/StaticMesh/Sword/",
+	//	L"Sword.X"),
+	//	E_FAIL);
+	Mesh_Loading();
 	
 	lstrcpy(m_szLoading, L"Loading Complete!!!");
 
@@ -141,6 +141,79 @@ _uint CLoading::Loading_ForStage(void)
 
 	return 0;
 }
+
+_bool CLoading::Ready_Mesh(MESH_PATH * pPathInfo)
+{
+	if (Engine::Ready_Meshes(m_pGraphicDev, RESOURCE_STAGE, pPathInfo->wstrObjectType.c_str(), Engine::TYPE_STATIC, pPathInfo->wstrRelative.c_str(), pPathInfo->wstrName.c_str()) < 0)
+		return false;
+
+	return 	true;
+}
+
+_bool CLoading::Mesh_Loading() //텍스트 읽고와서 메쉬 로딩
+{
+	TCHAR szFileName[MAX_STR] = L"../../Resource/Data/PathInfo.txt";
+	list<MESH_PATH*>	m_pPathList;
+
+	ifstream fin;
+
+	fin.open(szFileName);
+
+	if (fin.fail())
+		return E_FAIL;
+
+	char cTemp[MIN_STR];
+	while (!fin.eof())
+	{
+		MESH_PATH* pPathInfo = new MESH_PATH;
+
+		fin.getline(cTemp, MIN_STR);
+		wstring wstrGroup(cTemp, &cTemp[MIN_STR]);
+
+		fin.getline(cTemp, MIN_STR);
+		wstring wstrMap(cTemp, &cTemp[MIN_STR]);
+
+		fin.getline(cTemp, MIN_STR);
+		wstring wstrMeshType(cTemp, &cTemp[MIN_STR]);
+
+		fin.getline(cTemp, MIN_STR);
+		wstring wstrName(cTemp, &cTemp[MIN_STR]);
+
+		fin.getline(cTemp, MIN_STR);
+		wstring wstrObjectType(cTemp, &cTemp[MIN_STR]);
+
+		fin.getline(cTemp, MIN_STR);
+		wstring wstrRelative(cTemp, &cTemp[MIN_STR]);
+
+		pPathInfo->wstrGroup = wstrGroup;
+		pPathInfo->wstrMap = wstrMap;
+		pPathInfo->wstrMeshType = wstrMeshType;
+		pPathInfo->wstrName = wstrName;
+		pPathInfo->wstrObjectType = wstrObjectType;
+		pPathInfo->wstrRelative = wstrRelative;
+		m_pPathList.push_back(pPathInfo);
+	}
+
+	for (auto pPathInfo : m_pPathList)
+	{
+		int a = pPathInfo->wstrMeshType.compare(L"StaticMesh");
+		if (pPathInfo->wstrMeshType.compare(L"StaticMesh") != 1)
+			continue;
+		if (Engine::Ready_Meshes(m_pGraphicDev,
+			RESOURCE_STAGE,
+			pPathInfo->wstrObjectType.c_str(),
+			Engine::TYPE_STATIC,
+			pPathInfo->wstrRelative.c_str(),
+			pPathInfo->wstrName.c_str()) < 0)
+		{
+			return false;
+		}
+
+	}
+
+	return false;
+}
+
 
 CLoading* CLoading::Create(LPDIRECT3DDEVICE9 pGraphicDev, LOADINGID eLoading)
 {

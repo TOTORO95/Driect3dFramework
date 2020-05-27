@@ -34,13 +34,15 @@ private:
 	HRESULT		Ready_GameLogic_Layer(const _tchar* pLayerTag);
 	HRESULT		Ready_UI_Layer(const _tchar* pLayerTag);
 	HRESULT		Ready_LightInfo(void);
+	HRESULT		Load_Text(const _tchar * pFilePath);
 
 
 private:
-	_matrix						m_matView, m_matProj;
-	_ulong						m_dwRenderCnt = 0;
-	_tchar						m_szFPS[256];
-	_float						m_fTime = 0.f;
+	_matrix								m_matView, m_matProj;
+	_ulong								m_dwRenderCnt = 0;
+	_tchar								m_szFPS[256];
+	_float								m_fTime = 0.f;
+	map<wstring, Engine::CGameObject*>*	m_ppGameObjectMap = nullptr;
 
 public:
 	static CStage*		Create(LPDIRECT3DDEVICE9 pGraphicDev);

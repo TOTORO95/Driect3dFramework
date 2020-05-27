@@ -22,7 +22,8 @@ public:
 public:
 	HRESULT		Ready_Loading(LOADINGID eLoading);
 	_uint		Loading_ForStage(void);
-
+	_bool		Ready_Mesh(MESH_PATH * pPathInfo);
+	_bool		Mesh_Loading();
 private:
 	HANDLE				m_hThread;
 
