@@ -79,7 +79,7 @@ private:
 	HRESULT								Load_Data(const TCHAR * pFilePath);
 	HRESULT								Save_Text(const TCHAR * pFilePath);
 	HRESULT								Load_Text(const TCHAR * pFilePath);
-
+	bool								Ready_Mesh(MESH_PATH* pPathInfo);
 
 private:
 	Engine::CGraphicDev*				m_pDeviceClass = nullptr;

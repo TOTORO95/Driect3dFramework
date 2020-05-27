@@ -280,6 +280,14 @@ HRESULT CObjectTool::Load_Text(const TCHAR * pFilePathS)
 	return S_OK;
 }
 
+bool CObjectTool::Ready_Mesh(MESH_PATH * pPathInfo)
+{
+	if (Engine::Ready_Meshes(m_pDevice,	RESOURCE_STAGE,pPathInfo->wstrObjectType.c_str(),Engine::TYPE_STATIC,pPathInfo->wstrRelative.c_str(),pPathInfo->wstrName.c_str()) < 0)
+		return false;
+
+	return 	true;	
+}
+
 
 
 
@@ -343,28 +351,60 @@ BOOL CObjectTool::OnInitDialog()
 
 	for (auto pPathInfo : m_pMeshList)
 	{
+		//bool f;
 		if (pPathInfo->wstrMeshType.compare(L"StaticMesh") == 0)
 		{
-			m_hMap = m_StaticTree.InsertItem(pPathInfo->wstrMap.c_str(), 0, 0, m_hStaticMesh, TVI_LAST);
-			if (!pPathInfo->wstrGroup.empty())
+			bool bIsMap = false;
+			if (m_StaticTree.ItemHasChildren(m_hStaticRoot))
 			{
-				m_hGroup = m_StaticTree.InsertItem(pPathInfo->wstrGroup.c_str(), 0, 0, m_hMap, TVI_LAST);
-				m_hFloor = m_StaticTree.InsertItem(pPathInfo->wstrObjectType.c_str(), 0, 0, m_hGroup, TVI_LAST);
-			}
-			//else if (pPathInfo->wstrGroup.find(L"Wall") != wstring::npos)
-				//m_hFloor = m_StaticTree.InsertItem(pPathInfo->wstrObjectType.c_str(), 0, 0, m_hMap, TVI_LAST);
+				m_hMap = m_StaticTree.GetChildItem(m_hStaticRoot);
+				CString csMap = m_StaticTree.GetItemText(m_hMap);
 
-			wstring temp = pPathInfo->wstrObjectType + L".X";
-			if (Engine::Ready_Meshes(m_pDevice,
-				RESOURCE_STAGE,
-				pPathInfo->wstrObjectType.c_str(),
-				Engine::TYPE_STATIC,
-				pPathInfo->wstrRelative.c_str(),
-				temp.c_str()) < 0)
+				if (csMap.Find(pPathInfo->wstrMap.c_str()) != -1) //있음
+				{
+					if (!pPathInfo->wstrGroup.empty())
+					{
+						bIsMap = true;
+						m_hGroup = m_StaticTree.InsertItem(pPathInfo->wstrGroup.c_str(), 0, 0, m_hMap, TVI_LAST);
+						m_hFloor = m_StaticTree.InsertItem(pPathInfo->wstrObjectType.c_str(), 0, 0, m_hGroup, TVI_LAST);
+					}
+
+				}
+
+				while (m_hMap = m_StaticTree.GetNextSiblingItem(m_hMap))//
+				{
+					csMap = m_StaticTree.GetItemText(m_hMap);
+					if (csMap.Find(pPathInfo->wstrMap.c_str()) != -1) //있음
+					{
+						if (!pPathInfo->wstrGroup.empty())
+						{
+							bIsMap = true;
+							m_hGroup = m_StaticTree.InsertItem(pPathInfo->wstrGroup.c_str(), 0, 0, m_hMap, TVI_LAST);
+							m_hFloor = m_StaticTree.InsertItem(pPathInfo->wstrObjectType.c_str(), 0, 0, m_hGroup, TVI_LAST);
+						}
+
+					}
+
+				}
+
+			}
+			if (!bIsMap)
 			{
-				return false;
+				if (!pPathInfo->wstrGroup.empty())
+				{
+					m_hMap = m_StaticTree.GetChildItem(m_hStaticRoot);
+					m_hMap = m_StaticTree.InsertItem(pPathInfo->wstrMap.c_str(), 0, 0, m_hStaticMesh, TVI_LAST);
+					m_hGroup = m_StaticTree.InsertItem(pPathInfo->wstrGroup.c_str(), 0, 0, m_hMap, TVI_LAST);
+					m_hFloor = m_StaticTree.InsertItem(pPathInfo->wstrObjectType.c_str(), 0, 0, m_hGroup, TVI_LAST);
+				}
+				else
+				{
+					m_hFloor = m_StaticTree.InsertItem(pPathInfo->wstrObjectType.c_str(), 0, 0, m_hStaticMesh, TVI_LAST);
+				}
+
 			}
 
+			Ready_Mesh(pPathInfo);
 		}
 		else if (pPathInfo->wstrMeshType.compare(L"DynamicMesh") == 0)
 		{
@@ -407,9 +447,9 @@ void CObjectTool::OnBnClickedMeshCreate()
 	{
 		HTREEITEM hChild = m_InstanceTree.GetChildItem(m_hStaticRoot);
 		CString csText = m_InstanceTree.GetItemText(hChild);
-		if (csText.Find(wstrName.c_str()) != -1)
+		if (csText.Find(wstrName.c_str()) != -1) //있음
 			uiChildCount++;
-		while (hChild = m_InstanceTree.GetNextSiblingItem(hChild))
+		while (hChild = m_InstanceTree.GetNextSiblingItem(hChild))//
 		{
 			CString csText = m_InstanceTree.GetItemText(hChild);
 			if (csText.Find(wstrName.c_str()) != -1)
