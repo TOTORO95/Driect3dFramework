@@ -28,7 +28,7 @@ public:
 	virtual BOOL						OnInitDialog();
 
 public:
-	HTREEITEM							m_hDynamicMesh, m_hStaticMesh, m_hMap, m_hFloor, m_hBuilding, m_hTree, m_hPillar, m_hGrass, m_hEtc;
+	HTREEITEM							m_hDynamicMesh, m_hStaticMesh, m_hMap, m_hGroup,m_hFloor, m_hBuilding, m_hTree, m_hPillar, m_hGrass, m_hEtc;
 	HTREEITEM							m_hStaticRoot, m_hDynamicRoot, m_hInstDynamic, m_hInstStatic;
 	CTreeCtrl							m_StaticTree;
 	CButton								m_StaticCreateButton;

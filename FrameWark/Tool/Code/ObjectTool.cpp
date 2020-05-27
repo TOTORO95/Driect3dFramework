@@ -1,9 +1,9 @@
-// ../Code/ObjectTool.cpp : 구현 파일입니다.
+// ObjectTool.cpp : 구현 파일입니다.
 //
 
 #include "stdafx.h"
 #include "Tool.h"
-#include "../Code/ObjectTool.h"
+#include "ObjectTool.h"
 #include "afxdialogex.h"
 #include "DirectoryMgr.h"
 #include "MainFrm.h"
@@ -346,8 +346,13 @@ BOOL CObjectTool::OnInitDialog()
 		if (pPathInfo->wstrMeshType.compare(L"StaticMesh") == 0)
 		{
 			m_hMap = m_StaticTree.InsertItem(pPathInfo->wstrMap.c_str(), 0, 0, m_hStaticMesh, TVI_LAST);
-			if (pPathInfo->wstrGroup.find(L"Terrain") != wstring::npos)
-				m_hFloor = m_StaticTree.InsertItem(pPathInfo->wstrObjectType.c_str(), 0, 0, m_hMap, TVI_LAST);
+			if (!pPathInfo->wstrGroup.empty())
+			{
+				m_hGroup = m_StaticTree.InsertItem(pPathInfo->wstrGroup.c_str(), 0, 0, m_hMap, TVI_LAST);
+				m_hFloor = m_StaticTree.InsertItem(pPathInfo->wstrObjectType.c_str(), 0, 0, m_hGroup, TVI_LAST);
+			}
+			//else if (pPathInfo->wstrGroup.find(L"Wall") != wstring::npos)
+				//m_hFloor = m_StaticTree.InsertItem(pPathInfo->wstrObjectType.c_str(), 0, 0, m_hMap, TVI_LAST);
 
 			wstring temp = pPathInfo->wstrObjectType + L".X";
 			if (Engine::Ready_Meshes(m_pDevice,

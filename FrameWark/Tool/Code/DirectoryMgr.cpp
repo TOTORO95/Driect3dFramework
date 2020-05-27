@@ -76,7 +76,7 @@ void CDirectoryMgr::ExtractPathInfo(const TCHAR * pFullPath, list<MESH_PATH*>& r
 			//::PathRemoveFileSpec(szFilePath);
 
 			lstrcpy(szFilePath, strRelative);
-			if (pPathInfo->wstrRelative.find(L"DynamicMesh") != wstring::npos)
+			if (pPathInfo->wstrRelative.find(L"DynamicMesh") != wstring::npos) //DynamicMesh
 			{
 				// MeshName
 				pPathInfo->wstrName = ::PathFindFileName(szFilePath);
@@ -93,7 +93,7 @@ void CDirectoryMgr::ExtractPathInfo(const TCHAR * pFullPath, list<MESH_PATH*>& r
 				pPathInfo->wstrMeshType = ::PathFindFileName(szFilePath);
 
 			}
-			else
+			else //StaticMesh
 			{
 				// MeshName
 				//::PathRemoveFileSpec(szFilePath);
@@ -102,7 +102,7 @@ void CDirectoryMgr::ExtractPathInfo(const TCHAR * pFullPath, list<MESH_PATH*>& r
 				pPathInfo->wstrObjectType = ::PathFindFileName(szFilePath);
 
 				// MeshType
-				::PathRemoveFileSpec(szFilePath);
+				pPathInfo->wstrMeshType = ::PathRemoveFileSpec(szFilePath);
 
 				// MeshGroup 
 				pPathInfo->wstrGroup = ::PathFindFileName(szFilePath);
