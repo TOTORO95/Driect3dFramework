@@ -26,6 +26,7 @@ public:
 	CCell*				Get_Neighbor(NEIGHBOR eType) const	{ return m_pNeighbor[eType]; }
 	void				Set_Neighbor(NEIGHBOR eType, CCell* pNeighbor) { m_pNeighbor[eType] = pNeighbor; }
 	void				Set_NaviData(Engine::NAVI_DATA naviData);
+	void				Set_NaviData(Engine::CCell::POINT ePoint, _vec3 vPos);
 	Engine::NAVI_DATA 	Get_NaviData();
 	LPD3DXMESH			Get_SphereMesh(int iPointNum) { return m_pSphereMesh[iPointNum]; }
 	_matrix				Get_MatWorldSphere(int iPointNum) { return m_matSphereWorld[iPointNum]; }
@@ -58,7 +59,7 @@ private:
 	
 	LPD3DXLINE				m_pD3DXLine;
 	_ulong					m_dwIndex;
-	LPDIRECT3DDEVICE9 m_pGraphicDev;
+	LPDIRECT3DDEVICE9		m_pGraphicDev;
 
 public:
 	static CCell*		Create(LPDIRECT3DDEVICE9 pGraphicDev, const _ulong& dwIndex, const _vec3* pPointA, const _vec3* pPointB, const _vec3* pPointC);

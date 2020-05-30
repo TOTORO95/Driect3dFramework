@@ -127,17 +127,21 @@ HRESULT CNavMeshTool::Update(const _float & fTimeDelta)
 			m_vPos = m_pCamera->Get_PickPos();
 			m_bIsColl = true;
 		}
-		else
+		else if (m_pCamera->IsNavPick())
 		{
-			if (m_bIsColl)
-			{
-				Set_NavMeshData();
-				if (m_uiChangeIdx < 2)
-					m_uiChangeIdx++;
-				else
-					m_uiChangeIdx = 0;
-			}
+			m_vPos = m_pCamera->Get_PickPos();
+			m_bIsColl = true;
 		}
+
+		if (m_bIsColl)
+		{
+			Set_NavMeshData();
+			if (m_uiChangeIdx < 2)
+				m_uiChangeIdx++;
+			else
+				m_uiChangeIdx = 0;
+		}
+		
 
 	}
 
@@ -179,7 +183,11 @@ void CNavMeshTool::Set_NavMeshData()
 		break;
 	}
 	m_NavMeshTree.SetItemText(hChildItem, csTemp);
-	(*m_ppCellVec)[m_uiSelectNavIdx]->Set_NaviData(*m_pNavDataVec[m_uiSelectNavIdx]);
+	
+	if (m_pCamera->IsNavPick())
+		(*m_ppCellVec)[m_uiSelectNavIdx]->Set_NaviData((Engine::CCell::POINT) m_uiChangeIdx, m_vPos);
+	if(m_pCamera->IsPick())
+		(*m_ppCellVec)[m_uiSelectNavIdx]->Set_NaviData(*m_pNavDataVec[m_uiSelectNavIdx]);
 
 
 	//dynamic_cast<CTestStage*>(m_pScene)->Set_MeshVec(m_pNavDataVec);

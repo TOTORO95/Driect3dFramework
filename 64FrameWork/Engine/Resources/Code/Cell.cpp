@@ -23,8 +23,30 @@ void CCell::Set_NaviData(Engine::NAVI_DATA naviData)
 
 	for (int i = 0; i < POINT_END; i++)
 		m_tSphereData[i].vPosition = m_vPoint[i];
-	
 
+
+
+}
+
+void CCell::Set_NaviData(Engine::CCell::POINT ePoint,_vec3 vPos)
+{
+	switch (ePoint)
+	{
+	case Engine::CCell::POINT_A:
+		m_vPoint[POINT_A] = vPos;
+		m_tSphereData[POINT_A].vPosition = vPos;
+		break;
+	case Engine::CCell::POINT_B:
+		m_vPoint[POINT_B] = vPos;
+		m_tSphereData[POINT_B].vPosition = vPos;
+		break;
+	case Engine::CCell::POINT_C:
+		m_vPoint[POINT_C] = vPos;
+		m_tSphereData[POINT_C].vPosition = vPos;
+		break;
+	default:
+		break;
+	}
 
 }
 

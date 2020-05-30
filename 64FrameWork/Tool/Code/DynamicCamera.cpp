@@ -30,13 +30,38 @@ HRESULT CDynamicCamera::Ready_GameObject(const _vec3* pEye, const _vec3* pAt, co
 	m_fSpeed = 20.f;
 
 	FAILED_CHECK_RETURN(Engine::CCamera::Ready_GameObject(), E_FAIL);
-
+	m_pKeyMgr = CKeyMgr::GetInstance();
+	
 	return S_OK;
 }
 
 _int CDynamicCamera::Update_GameObject(const _float& fTimeDelta)
 {
+	m_pKeyMgr->Update();
+
 	Key_Input(fTimeDelta);
+
+	m_bIsNavPick = false;
+	if (m_pKeyMgr->KeyUp(KEY_LBUTTON))
+	{
+		if (m_iPickMode == 0)
+			Picking_Mesh();
+		else if (m_iPickMode == 1)
+		{
+			Pickint_Nav();
+			if (!m_bIsNavPick)
+				Picking_Mesh();
+		}
+
+	}
+	else
+	{
+		m_bIsPick = false;
+	}
+
+
+
+
 
 	_int iExit = Engine::CCamera::Update_GameObject(fTimeDelta);
 
@@ -121,17 +146,19 @@ void CDynamicCamera::Key_Input(const _float& fTimeDelta)
 	{
 		Mouse_Move(fTimeDelta);
 	}
-	if (Engine::Get_DIMouseState(Engine::DIM_LB) & 0x80)
+
+	/*if (Engine::Get_DIMouseState(Engine::DIM_LB) & 0x80)
 	{
 		if (m_iPickMode == 0)
 			Picking_Mesh();
 		else if (m_iPickMode == 1)
+		{
 			Pickint_Nav();
-	}
-	else
-	{
-		m_bIsPick = false;
-	}
+			if(!m_bIsNavPick)
+				Picking_Mesh();
+		}
+
+	}*/
 
 
 
@@ -187,6 +214,7 @@ void CDynamicCamera::Mouse_Fix(void)
 
 void CDynamicCamera::Picking_Mesh()
 {
+	
 	m_wstrPickName = L"No Pick";
 	m_pPickTransform = nullptr;
 	m_bIsPick = false;
@@ -310,7 +338,7 @@ void CDynamicCamera::Pickint_Nav()
 {
 	m_wstrPickName = L"No Pick";
 	m_pPickTransform = nullptr;
-	m_bIsPick = false;
+	m_bIsNavPick = false;
 
 	POINT	ptMouse{};
 	RAY		tRay;
@@ -352,14 +380,17 @@ void CDynamicCamera::Pickint_Nav()
 	RAY tPickRay;
 	m_ppCellVec = &dynamic_cast<Engine::CNaviMesh*>(Engine::Get_Layer(L"GameLogic")->Get_GameObject(L"Player")->Get_Component(L"Com_Navi", Engine::ID_STATIC))->Get_CellVec();
 	int iCellIdx = 0;
+	int iPoint = 0;
+
+	_vec3 vNavPos = { INIT_VEC3 };
 	for (auto pCell : (*m_ppCellVec))//TODO: 피킹 이함함 체크
 	{
 		if (pCell == nullptr)
 			continue;
 
-
-		for (int iPoint = 0; iPoint < Engine::CCell::POINT_END; iPoint++)
+		for (iPoint = 0; iPoint < Engine::CCell::POINT_END; iPoint++)
 		{
+			
 			if (pCell->Get_SphereMesh(iPoint) == nullptr)
 				continue;
 			LPD3DXMESH pMesh;
@@ -367,11 +398,11 @@ void CDynamicCamera::Pickint_Nav()
 				pCell->Get_SphereMesh(iPoint)->GetFVF(),
 				m_pGraphicDev,
 				&pMesh);
+			if (pMesh == nullptr)
+				continue;
 
 			_matrix pCellWorldMat = pCell->Get_MatWorldSphere(iPoint);
 			_matrix pCellMatIvs;
-			if (pMesh == nullptr)
-				continue;
 
 			RAY tConvertRay;
 			D3DXMatrixInverse(&pCellMatIvs, NULL, &pCellWorldMat);
@@ -400,12 +431,15 @@ void CDynamicCamera::Pickint_Nav()
 				{
 					if (fDist < fMinDist)
 					{
-						m_wstrPickName = to_wstring(iCellIdx) + L"_" + to_wstring(iPoint);
+						m_wstrPickName = L"NavPoint "+to_wstring(iCellIdx) + L"_" + to_wstring(iPoint);
 						fMinDist = fDist;
-						m_bIsPick = true;
-						PickWorldMat = pCellWorldMat;
-						tPickRay = tConvertRay;
-						m_matPickWorldNav = pCellWorldMat;
+						m_bIsNavPick = true;
+						break;
+
+
+						//PickWorldMat = pCellWorldMat;
+						//tPickRay = tConvertRay;
+						//m_matPickWorldNav = pCellWorldMat;
 						//m_pPickTransform= pCellWorldMat;
 					}
 				}
@@ -416,15 +450,18 @@ void CDynamicCamera::Pickint_Nav()
 			Safe_Release(pVB);
 			Safe_Release(pIB);
 			Safe_Release(pMesh);
-			iCellIdx++;
-		}
-	}
-	if (m_bIsPick)
-	{
-		m_vPickPos = tPickRay.vPos + tPickRay.vDir * fMinDist;
-		D3DXVec3TransformCoord(&m_vPickPos, &m_vPickPos, &PickWorldMat);
 
-		cout << m_vPickPos.x << m_vPickPos.y << m_vPickPos.z << endl;
+			if (m_bIsNavPick)
+			{
+				m_bIsPick = false;
+				m_vPickPos = *(*m_ppCellVec)[iCellIdx]->Get_Point((Engine::CCell::POINT)iPoint);
+				cout << m_vPickPos.x << m_vPickPos.y << m_vPickPos.z << endl;
+				return;
+			}
+		}
+	
+		iCellIdx++;
+	
 	}
 
 }
