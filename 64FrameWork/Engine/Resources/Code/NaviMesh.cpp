@@ -34,10 +34,7 @@ HRESULT CNaviMesh::Add_Cell(NAVI_DATA* naviData)
 	if(pCell==nullptr)
 		return E_FAIL;
 	m_vecCell.push_back(pCell);
-
-
 	FAILED_CHECK_RETURN(Link_Cell(), E_FAIL);
-
 }
 
 vector<CCell*>& CNaviMesh::Get_CellVec()

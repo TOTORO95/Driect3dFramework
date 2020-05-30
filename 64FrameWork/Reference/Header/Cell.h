@@ -27,6 +27,9 @@ public:
 	void				Set_Neighbor(NEIGHBOR eType, CCell* pNeighbor) { m_pNeighbor[eType] = pNeighbor; }
 	void				Set_NaviData(Engine::NAVI_DATA naviData);
 	Engine::NAVI_DATA 	Get_NaviData();
+	LPD3DXMESH			Get_SphereMesh(int iPointNum) { return m_pSphereMesh[iPointNum]; }
+	_matrix				Get_MatWorldSphere(int iPointNum) { return m_matSphereWorld[iPointNum]; }
+
 public:
 	HRESULT		Ready_Cell(	const _ulong& dwIndex,
 							const _vec3* pPointA,
@@ -43,11 +46,18 @@ public:
 
 
 private:
-	_vec3		m_vPoint[POINT_END];
-	CCell*		m_pNeighbor[NEIGHBOR_END];
-	CLine*		m_pLine[LINE_END];
-	LPD3DXLINE	m_pD3DXLine;
-	_ulong		m_dwIndex;
+	_vec3					m_vPoint[POINT_END];
+	CCell*					m_pNeighbor[NEIGHBOR_END];
+	CLine*					m_pLine[LINE_END];
+
+	LPD3DXMESH				m_pSphereMesh[POINT_END] = { nullptr,nullptr,nullptr };
+	SPHERE_DATA				m_tSphereData[POINT_END];
+	BYTE*					m_pbySphere[POINT_END];
+	_matrix					m_matSphereWorld[POINT_END];
+	LPDIRECT3DVERTEXBUFFER9 m_pSphereBuffer[POINT_END] = { nullptr,nullptr,nullptr };
+	
+	LPD3DXLINE				m_pD3DXLine;
+	_ulong					m_dwIndex;
 	LPDIRECT3DDEVICE9 m_pGraphicDev;
 
 public:

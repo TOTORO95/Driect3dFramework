@@ -21,9 +21,12 @@
 #ifdef _DEBUG
 #define DE_COUT(_message) wcout<<_message<<endl;
 #endif // !_DEBUG
+#ifndef _DEBUG
+#define DE_COUT(_message) wstring wstrOut = _message;
+#endif
 
-
-
+#define MYNULL (_hr)							\
+{if( ((HRESULT)_hr)<0)assert(_hr==E_FAIL);}		
 
 //#define NULL_CHECK64( _ptr)	\
 //{if( _ptr == 0){return;}}

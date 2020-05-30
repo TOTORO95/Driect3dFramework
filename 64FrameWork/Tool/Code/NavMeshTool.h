@@ -53,7 +53,7 @@ private:
 
 	_uint								m_uiOldCellVecIDx=0;
 	Engine::CNaviMesh*					m_pNaviCom = nullptr;
-	vector<Engine::CCell*>*				m_ppCellVec=nullptr;
+	vector<Engine::CCell*>*				m_ppCellVec = nullptr;
 	vector<Engine::NAVI_DATA*>			m_pNavDataVec;
 	
 

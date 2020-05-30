@@ -56,8 +56,7 @@ void CNavMeshTool::OnNavMeshCreateButton()
 {
 	_uint uiNavIdx;
 	uiNavIdx = m_ppCellVec->size();
-
-
+	
 	if (m_ppCellVec != nullptr)
 	{
 		Engine::NAVI_DATA* pNaviData = new Engine::NAVI_DATA;
@@ -67,7 +66,6 @@ void CNavMeshTool::OnNavMeshCreateButton()
 		//pNaviData->vPosition2 = {0.f,0.f,0.f};
 		//pNaviData->vPosition3 = {0.f,0.f,0.f};
 		//pNaviData->uiIdx=(*m_ppCellVec).size();
-
 		
 		pNaviData->uiIdx =(*m_ppCellVec).size();
 

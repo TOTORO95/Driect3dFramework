@@ -1,6 +1,6 @@
 #include "Cell.h"
 #include "Line.h"
-
+#define NAV_RADIUS 0.25f
 USING(Engine)
 
 Engine::CCell::CCell(LPDIRECT3DDEVICE9 pGraphicDev)
@@ -20,6 +20,12 @@ void CCell::Set_NaviData(Engine::NAVI_DATA naviData)
 	m_vPoint[POINT_A] = naviData.vPosition1;
 	m_vPoint[POINT_B] = naviData.vPosition2;
 	m_vPoint[POINT_C] = naviData.vPosition3;
+
+	for (int i = 0; i < POINT_END; i++)
+		m_tSphereData[i].vPosition = m_vPoint[i];
+	
+
+
 }
 
 Engine::NAVI_DATA CCell::Get_NaviData()
@@ -48,6 +54,30 @@ HRESULT Engine::CCell::Ready_Cell(const _ulong& dwIndex, const _vec3* pPointA, c
 
 	m_pLine[LINE_CA] = CLine::Create(&_vec3(m_vPoint[POINT_C].x,m_vPoint[POINT_C].y, m_vPoint[POINT_C].z),
 									 &_vec3(m_vPoint[POINT_A].x,m_vPoint[POINT_A].y, m_vPoint[POINT_A].z));
+	
+	LPD3DXMESH	pSphereMesh = nullptr;
+	VTXCOL* pVertices = nullptr;
+
+	D3DXCreateSphere(m_pGraphicDev, 1.f, 10, 10, &pSphereMesh, nullptr);
+	for (int i = 0; i < POINT_END; i++)
+	{	
+		m_tSphereData[i].fRadius = NAV_RADIUS;
+		m_tSphereData[i].vPosition = m_vPoint[i];
+		pSphereMesh->CloneMeshFVF(0, FVF_COL, m_pGraphicDev, &m_pSphereMesh[i]);
+		m_pSphereMesh[i]->GetVertexBuffer(&m_pSphereBuffer[i]);
+		_uint uiNumVtx = m_pSphereMesh[i]->GetNumVertices();
+
+		m_pSphereBuffer[i]->Lock(0, 0, (void**)&pVertices, 0);
+
+		for (_uint i = 0; i < uiNumVtx; i++)
+			pVertices[i].dwColor = D3DCOLOR_RGBA(0, 255, 0, 255);
+
+		m_pSphereBuffer[i]->Unlock();
+		m_pSphereBuffer[i]->Release();
+
+	}
+	//pSphereMesh->Release();
+
 
 #ifdef _DEBUG
 	FAILED_CHECK_RETURN(D3DXCreateLine(m_pGraphicDev, &m_pD3DXLine), E_FAIL);
@@ -106,6 +136,14 @@ _bool Engine::CCell::Compare_Point(const _vec3* pPointF, const _vec3* pPointS, C
 
 void Engine::CCell::Render_Cell(void)
 {
+	//TODO: Debug Sphere Check
+
+
+	//m_pGraphicDev->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+	//m_pGraphicDev->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+
+
+
 	_vec3	vPoint[4];
 
 	vPoint[0] = m_vPoint[POINT_A];
@@ -124,9 +162,11 @@ void Engine::CCell::Render_Cell(void)
 
 		if (vPoint[i].z <= 0.1f)
 			vPoint[i].z = 0.1f;
-
 		D3DXVec3TransformCoord(&vPoint[i], &vPoint[i], &matProj);
+
 	}
+
+
 
 	m_pD3DXLine->SetWidth(3.f);	// 라인의 굵기를 결정하는 함수
 	m_pGraphicDev->EndScene();
@@ -134,11 +174,39 @@ void Engine::CCell::Render_Cell(void)
 
 	m_pD3DXLine->Begin();
 
+
 	_matrix matTemp;
 
 	m_pD3DXLine->DrawTransform(vPoint, 4, D3DXMatrixIdentity(&matTemp), D3DXCOLOR(1.f, 0.f, 0.f, 1.f));
 
 	m_pD3DXLine->End();
+
+	m_pGraphicDev->BeginScene();
+	_matrix MatoldWorld;
+	m_pGraphicDev->GetTransform(D3DTS_WORLD, &MatoldWorld);
+
+	for (int i = 0; i < 3; i++)
+	{
+		if (m_pSphereMesh[i] == nullptr)
+			continue;
+
+
+		_matrix  matScale, matTrans;
+
+		D3DXMatrixTranslation(&matTrans, m_tSphereData[i].vPosition.x, m_tSphereData[i].vPosition.y, m_tSphereData[i].vPosition.z);
+		D3DXMatrixScaling(&matScale, m_tSphereData[i].fRadius, m_tSphereData[i].fRadius, m_tSphereData[i].fRadius);
+		m_matSphereWorld[i] = matScale * matTrans;
+		m_pGraphicDev->SetTransform(D3DTS_WORLD, &m_matSphereWorld[i]);
+
+		m_pGraphicDev->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+		m_pSphereMesh[i]->DrawSubset(0);
+		m_pGraphicDev->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+
+	}
+	m_pGraphicDev->SetTransform(D3DTS_WORLD, &MatoldWorld);
+
+	m_pGraphicDev->EndScene();
+
 
 }
 

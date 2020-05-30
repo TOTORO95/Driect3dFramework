@@ -148,6 +148,7 @@ HRESULT Engine::CResourcesMgr::Ready_Meshes(LPDIRECT3DDEVICE9 pGraphicDev,
 		cout << "Engine::CResourcesMgr::Ready_Meshes Fail FiilName = " << pFileName << endl;
 		cout << "File Path = = " << pFilePath << endl;
 	#endif
+		assert(pResources == nullptr);
 		return E_FAIL;
 	}
 	//NULL_CHECK_RETURN(pResources, E_FAIL);

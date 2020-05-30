@@ -25,8 +25,8 @@ private:
 	_vec3		m_vMin, m_vMax;
 	_matrix		m_matWorld;
 
-#ifdef _DEBUG
 	LPDIRECT3DDEVICE9			m_pGraphicDev;
+#ifdef _DEBUG
 	LPDIRECT3DVERTEXBUFFER9		m_pVB;
 	LPDIRECT3DINDEXBUFFER9		m_pIB;
 	LPDIRECT3DTEXTURE9			m_pTexture[COL_END];

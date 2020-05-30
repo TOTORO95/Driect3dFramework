@@ -23,11 +23,11 @@
 #include "Engine_Function.h"
 #include "Engine_Struct.h"
 #include "Engine_Enum.h"
-
-#ifdef _DEBUG
+#include <stdlib.h>
+#include <cassert>
+//#ifdef _DEBUG
 #include <iostream>
 #define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
 #include <crtdbg.h>
 
 #ifndef DBG_NEW 
@@ -37,8 +37,8 @@
 
 #endif
 
-#endif // _DEBUG
+//#endif // _DEBUG
+
 
 using namespace std;
-
 #endif // Engine_Defines_h__

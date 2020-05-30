@@ -27,6 +27,12 @@ private:
 	HRESULT				Link_Cell(void);
 
 private:
+#ifdef _DEBUG
+	LPDIRECT3DVERTEXBUFFER9		m_pVB;
+	LPDIRECT3DINDEXBUFFER9		m_pIB;
+	LPDIRECT3DTEXTURE9			m_pTexture[COL_END];
+
+#endif
 	vector<CCell*>			m_vecCell;
 	_ulong					m_dwIndex;
 

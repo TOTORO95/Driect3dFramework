@@ -19,7 +19,6 @@ CDynamicCamera::~CDynamicCamera(void)
 
 HRESULT CDynamicCamera::Ready_GameObject(const _vec3* pEye, const _vec3* pAt, const _vec3* pUp, const _float& fFovY, const _float& fAspect, const _float& fNear, const _float& fFar, const _bool& bMainCamera)
 {
-
 	m_vEye = *pEye;
 	m_vAt = *pAt;
 	m_vUp = *pUp;
@@ -28,9 +27,7 @@ HRESULT CDynamicCamera::Ready_GameObject(const _vec3* pEye, const _vec3* pAt, co
 	m_fAspect = fAspect;
 	m_fNear = fNear;
 	m_fFar = fFar;
-
 	m_fSpeed = 20.f;
-
 
 	FAILED_CHECK_RETURN(Engine::CCamera::Ready_GameObject(), E_FAIL);
 
@@ -39,6 +36,7 @@ HRESULT CDynamicCamera::Ready_GameObject(const _vec3* pEye, const _vec3* pAt, co
 
 _int CDynamicCamera::Update_GameObject(const _float& fTimeDelta)
 {
+
 	//if(m_pGameObjectMap==nullptr)
 	//	m_pGameObjectMap = &Engine::Get_Layer(L"GameLogic")->Get_ObjectMap();
 
@@ -50,7 +48,10 @@ _int CDynamicCamera::Update_GameObject(const _float& fTimeDelta)
 	}
 	if (Engine::Get_DIMouseState(Engine::DIM_LB) & 0x80)
 	{
-		Picking_Mesh();
+		if (m_iPickMode == 1)
+			Picking_Mesh();
+		else if (m_iPickMode == 2)
+			Pickint_Nav();
 	}
 	else
 	{
@@ -301,6 +302,133 @@ void CDynamicCamera::Picking_Mesh()
 		m_vPickPos = tPickRay.vPos + tPickRay.vDir * fMinDist;
 		D3DXVec3TransformCoord(&m_vPickPos, &m_vPickPos, &PickWorldMat);
 	}
+
+}
+
+void CDynamicCamera::Pickint_Nav()
+{
+	m_wstrPickName = L"No Pick";
+	m_pPickTransform = nullptr;
+	m_bIsPick = false;
+
+	POINT	ptMouse{};
+	RAY		tRay;
+	m_vPickPos = { 0.f, 0.f,0.f };
+	// 윈도우 영역 == 뷰포트 영역
+	GetCursorPos(&ptMouse);
+	ScreenToClient(g_hWnd, &ptMouse);
+	if (ptMouse.x<0 || ptMouse.x>WINCX || ptMouse.y < 0 || ptMouse.y>WINCY)
+		return;
+
+	// 뷰 포트에서 투영으로
+	D3DVIEWPORT9			ViewPort;
+	ZeroMemory(&ViewPort, sizeof(D3DVIEWPORT9));
+	m_pGraphicDev->GetViewport(&ViewPort);
+
+	_vec3	vMousePos;
+	vMousePos.x = ptMouse.x / (ViewPort.Width * 0.5f) - 1.f;
+	vMousePos.y = -ptMouse.y / (ViewPort.Height * 0.5f) + 1.f;
+	vMousePos.z = 0.f;
+
+	// 투영에서 뷰 스페이스로
+	_matrix		matProj;
+	m_pGraphicDev->GetTransform(D3DTS_PROJECTION, &matProj);
+	D3DXMatrixInverse(&matProj, NULL, &matProj);
+	D3DXVec3TransformCoord(&vMousePos, &vMousePos, &matProj);
+
+	tRay.vPos = _vec3(0.f, 0.f, 0.f);
+	tRay.vDir = vMousePos - tRay.vPos;
+
+	// 뷰 스페이스에서 월드 스페이스로
+	_matrix		matView;
+	m_pGraphicDev->GetTransform(D3DTS_VIEW, &matView);
+	D3DXMatrixInverse(&matView, NULL, &matView);
+	D3DXVec3TransformCoord(&tRay.vPos, &tRay.vPos, &matView);
+	D3DXVec3TransformNormal(&tRay.vDir, &tRay.vDir, &matView);
+
+	FLOAT fMinDist = INT_MAX;
+	_matrix PickWorldMat;
+	RAY tPickRay;
+	m_ppCellVec = &dynamic_cast<Engine::CNaviMesh*>(Engine::Get_Layer(L"GameLogic")->Get_GameObject(L"Player")->Get_Component(L"Com_Navi", Engine::ID_STATIC))->Get_CellVec();
+
+	for (auto pCell : (*m_ppCellVec))
+	{
+		if (pCell == nullptr)
+			continue;
+
+		for (int i = 0; i < Engine::CCell::POINT_END; i++)
+		{
+			//pCell->Get_SphereMesh();
+
+		}
+	//	Engine::CTransform* pTransform = dynamic_cast<Engine::CTransform*>(pStaticObject->Get_Component(L"Com_Transform", Engine::ID_DYNAMIC));
+	//	Engine::CStaticMesh* pStaticMesh = dynamic_cast<Engine::CStaticMesh*>(pComponent);
+
+	//	LPD3DXMESH pMesh;
+	//	pStaticMesh->Get_Mesh()->CloneMeshFVF(D3DXMESH_MANAGED,
+	//		pStaticMesh->Get_Mesh()->GetFVF(),
+	//		m_pGraphicDev,
+	//		&pMesh);
+	//	if (pMesh == nullptr)
+	//		continue;
+
+
+	//	_matrix pObjWorldMat = pTransform->m_matWorld;
+	//	_matrix pObjMatIvs;
+
+	//	RAY tConvertRay;
+	//	D3DXMatrixInverse(&pObjMatIvs, NULL, &pObjWorldMat);
+	//	D3DXVec3TransformCoord(&tConvertRay.vPos, &tRay.vPos, &pObjMatIvs);
+	//	D3DXVec3TransformNormal(&tConvertRay.vDir, &tRay.vDir, &pObjMatIvs);
+
+	//	LPDIRECT3DVERTEXBUFFER9 pVB;
+	//	LPDIRECT3DINDEXBUFFER9 pIB;
+	//	D3DXVECTOR3 v01, v02, v03;  // Need Convert WorldPos Value
+	//	struct VERT { D3DXVECTOR3 p; D3DXVECTOR3 n; float tu, tv; };
+
+	//	WORD*  pIndices;
+	//	VERT*  pVertices;
+	//	pMesh->GetVertexBuffer(&pVB);
+	//	pMesh->GetIndexBuffer(&pIB);
+
+	//	pIB->Lock(0, 0, (void**)&pIndices, 0);
+	//	pVB->Lock(0, 0, (void**)&pVertices, 0);
+	//	_float fU, fV, fDist;
+
+	//	for (UINT i = 0; i < pMesh->GetNumFaces(); i++)
+	//	{
+	//		D3DXVECTOR3 v0 = pVertices[pIndices[3 * i + 0]].p;
+	//		D3DXVECTOR3 v1 = pVertices[pIndices[3 * i + 1]].p;
+	//		D3DXVECTOR3 v2 = pVertices[pIndices[3 * i + 2]].p;
+
+	//		if (D3DXIntersectTri(&v0, &v1, &v2, &tConvertRay.vPos, &tConvertRay.vDir, &fU, &fV, &fDist))
+	//		{
+	//			if (fDist < fMinDist)
+	//			{
+	//				m_wstrPickName = pStaticObject->Get_ObjName() + L"_" + to_wstring(pStaticObject->Get_ObjIdx());
+	//				fMinDist = fDist;
+	//				m_bIsPick = true;
+	//				PickWorldMat = pObjWorldMat;
+	//				tPickRay = tConvertRay;
+	//				m_pPickTransform = pTransform;
+	//			}
+	//		}
+	//	}
+
+	//	pVB->Unlock();
+	//	pIB->Unlock();
+
+	//	Safe_Release(pVB);
+	//	Safe_Release(pIB);
+	//	Safe_Release(pMesh);
+
+	//}
+	//if (m_bIsPick)
+	//{
+	//	m_vPickPos = tPickRay.vPos + tPickRay.vDir * fMinDist;
+	//	D3DXVec3TransformCoord(&m_vPickPos, &m_vPickPos, &PickWorldMat);
+	}
+
 
 }
 

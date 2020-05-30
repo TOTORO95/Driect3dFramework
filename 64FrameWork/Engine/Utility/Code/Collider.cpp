@@ -1,6 +1,7 @@
 #include "Collider.h"
 
 USING(Engine)
+
 Engine::CCollider::CCollider(LPDIRECT3DDEVICE9 pGraphicDev)
 	: m_pGraphicDev(pGraphicDev)
 {
@@ -129,8 +130,6 @@ HRESULT Engine::CCollider::Ready_Collider(const _vec3* pPos, const _ulong& dwNum
 
 	m_pIB->Unlock();
 	
-#endif
-
 	for (_uint i = 0; i < COL_END; ++i)
 	{
 		m_pGraphicDev->CreateTexture(1, 1, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &m_pTexture[i], NULL);
@@ -144,6 +143,8 @@ HRESULT Engine::CCollider::Ready_Collider(const _vec3* pPos, const _ulong& dwNum
 
 		m_pTexture[i]->UnlockRect(0);
 	}
+#endif
+
 
 	return S_OK;
 }

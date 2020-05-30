@@ -57,7 +57,11 @@ namespace Engine
 	{
 		_float fWidth, fHeigth;
 	}RESOLUTION;
-
+	typedef struct tagSphere
+	{
+		_vec3 vPosition;
+		_float fRadius;
+	}SPHERE_DATA;
 	typedef struct D3DXFRAME_DERIVED : public D3DXFRAME
 	{
 		_matrix				CombinedTransformationMatrix;

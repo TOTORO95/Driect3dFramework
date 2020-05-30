@@ -51,7 +51,7 @@ void Safe_Delete(T& pointer)
 	}
 }
 
-template <typename T> 
+template <typename T>
 void Safe_Delete_Array(T& pointer)
 {
 	if (NULL != pointer)
@@ -59,6 +59,12 @@ void Safe_Delete_Array(T& pointer)
 		delete[] pointer;
 		pointer = NULL;
 	}
+}
+template <typename T>
+void Null_Check_Assert(T& pointer)
+{
+	//HRESULT hrd= pointer;
+	assert(E_FAIL != pointer);
 }
 
 

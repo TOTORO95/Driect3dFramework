@@ -218,7 +218,7 @@ _bool CLoading::Mesh_Loading() //텍스트 읽고와서 메쉬 로딩
 				wstring wstr =L"Loading.cpp ReadyMesh Failed!!!  Object =" + pPathInfo->wstrObjectType;
 
 				DE_COUT(wstr.c_str())
-					continue;
+				continue;
 			}
 
 		}

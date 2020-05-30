@@ -30,16 +30,17 @@ public:
 	_vec3						Get_PickPos() { return m_vPickPos; }
 	wstring						Get_PickName() { return m_wstrPickName; }
 	void						Init_PickName();
+	void						Set_PickMode(_int iPickMode) { m_iPickMode = iPickMode; }
 	Engine::CTransform*			Get_PickTransform() {return m_pPickTransform;}
 	_bool						IsPick() { return m_bIsPick; }
-
 private:
 	void						Key_Input(const _float& fTimeDelta);
 	void						Mouse_Move(const _float& fTimeDelta);
 	void						Mouse_Fix(void);
 	void						Picking_Mesh();
-
+	void						Pickint_Nav();
 private :
+	_int						m_iPickMode=0;
 	_bool						m_bClick;
 	_bool						m_bMouseFix;
 	Engine::CKeyMgr*			m_pKeyMgr = nullptr;
@@ -48,6 +49,7 @@ private :
 	_vec3						m_vPickPos = { 0.f, 0.f, 0.f };
 	wstring						m_wstrPickName = L"No Pick";
 	_bool						m_bIsPick=false;
+	vector<Engine::CCell*>*		m_ppCellVec = nullptr;
 
 public:
 	static CDynamicCamera*		Create(LPDIRECT3DDEVICE9 pGraphicDev,
