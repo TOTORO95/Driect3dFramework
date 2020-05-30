@@ -50,7 +50,7 @@ private :
 	wstring						m_wstrPickName = L"No Pick";
 	_bool						m_bIsPick=false;
 	vector<Engine::CCell*>*		m_ppCellVec = nullptr;
-
+	_matrix						m_matPickWorldNav;
 public:
 	static CDynamicCamera*		Create(LPDIRECT3DDEVICE9 pGraphicDev,
 										const _vec3* pEye,

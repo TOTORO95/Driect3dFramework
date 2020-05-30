@@ -36,27 +36,7 @@ HRESULT CDynamicCamera::Ready_GameObject(const _vec3* pEye, const _vec3* pAt, co
 
 _int CDynamicCamera::Update_GameObject(const _float& fTimeDelta)
 {
-
-	//if(m_pGameObjectMap==nullptr)
-	//	m_pGameObjectMap = &Engine::Get_Layer(L"GameLogic")->Get_ObjectMap();
-
 	Key_Input(fTimeDelta);
-
-	if (Engine::Get_DIMouseState(Engine::DIM_RB) & 0x80)
-	{
-		Mouse_Move(fTimeDelta);
-	}
-	if (Engine::Get_DIMouseState(Engine::DIM_LB) & 0x80)
-	{
-		if (m_iPickMode == 1)
-			Picking_Mesh();
-		else if (m_iPickMode == 2)
-			Pickint_Nav();
-	}
-	else
-	{
-		m_bIsPick = false;
-	}
 
 	_int iExit = Engine::CCamera::Update_GameObject(fTimeDelta);
 
@@ -116,7 +96,10 @@ void CDynamicCamera::Key_Input(const _float& fTimeDelta)
 		m_vEye += vLength;
 		m_vAt += vLength;
 	}
-
+	if (Engine::Get_DIKeyState(DIK_O) & 0x80)
+	{
+		m_iPickMode ? m_iPickMode = 0 : m_iPickMode = 1;
+	}
 	if (Engine::Get_DIKeyState(DIK_TAB) & 0x80)
 	{
 		if (true == m_bClick)
@@ -133,6 +116,24 @@ void CDynamicCamera::Key_Input(const _float& fTimeDelta)
 	}
 	else
 		m_bClick = false;
+
+	if (Engine::Get_DIMouseState(Engine::DIM_RB) & 0x80)
+	{
+		Mouse_Move(fTimeDelta);
+	}
+	if (Engine::Get_DIMouseState(Engine::DIM_LB) & 0x80)
+	{
+		if (m_iPickMode == 0)
+			Picking_Mesh();
+		else if (m_iPickMode == 1)
+			Pickint_Nav();
+	}
+	else
+	{
+		m_bIsPick = false;
+	}
+
+
 
 	if (false == m_bMouseFix)
 		return;
@@ -350,85 +351,81 @@ void CDynamicCamera::Pickint_Nav()
 	_matrix PickWorldMat;
 	RAY tPickRay;
 	m_ppCellVec = &dynamic_cast<Engine::CNaviMesh*>(Engine::Get_Layer(L"GameLogic")->Get_GameObject(L"Player")->Get_Component(L"Com_Navi", Engine::ID_STATIC))->Get_CellVec();
-
-	for (auto pCell : (*m_ppCellVec))
+	int iCellIdx = 0;
+	for (auto pCell : (*m_ppCellVec))//TODO: 피킹 이함함 체크
 	{
 		if (pCell == nullptr)
 			continue;
 
-		for (int i = 0; i < Engine::CCell::POINT_END; i++)
+
+		for (int iPoint = 0; iPoint < Engine::CCell::POINT_END; iPoint++)
 		{
-			//pCell->Get_SphereMesh();
+			if (pCell->Get_SphereMesh(iPoint) == nullptr)
+				continue;
+			LPD3DXMESH pMesh;
+			pCell->Get_SphereMesh(iPoint)->CloneMeshFVF(D3DXMESH_MANAGED,
+				pCell->Get_SphereMesh(iPoint)->GetFVF(),
+				m_pGraphicDev,
+				&pMesh);
 
+			_matrix pCellWorldMat = pCell->Get_MatWorldSphere(iPoint);
+			_matrix pCellMatIvs;
+			if (pMesh == nullptr)
+				continue;
+
+			RAY tConvertRay;
+			D3DXMatrixInverse(&pCellMatIvs, NULL, &pCellWorldMat);
+			D3DXVec3TransformCoord(&tConvertRay.vPos, &tRay.vPos, &pCellMatIvs);
+			D3DXVec3TransformNormal(&tConvertRay.vDir, &tRay.vDir, &pCellMatIvs);
+
+			LPDIRECT3DVERTEXBUFFER9 pVB;
+			LPDIRECT3DINDEXBUFFER9 pIB;
+			D3DXVECTOR3 v01, v02, v03;  // Need Convert WorldPos Value
+			struct VERT { D3DXVECTOR3 p; D3DXVECTOR3 n; float tu, tv; };
+
+			WORD*  pIndices;
+			VERT*  pVertices;
+			pMesh->GetVertexBuffer(&pVB);
+			pMesh->GetIndexBuffer(&pIB);
+			pIB->Lock(0, 0, (void**)&pIndices, 0);
+			pVB->Lock(0, 0, (void**)&pVertices, 0);
+			_float fU, fV, fDist;
+			for (UINT i = 0; i < pMesh->GetNumFaces(); i++)
+			{
+				D3DXVECTOR3 v0 = pVertices[pIndices[3 * i + 0]].p;
+				D3DXVECTOR3 v1 = pVertices[pIndices[3 * i + 1]].p;
+				D3DXVECTOR3 v2 = pVertices[pIndices[3 * i + 2]].p;
+
+				if (D3DXIntersectTri(&v0, &v1, &v2, &tConvertRay.vPos, &tConvertRay.vDir, &fU, &fV, &fDist))
+				{
+					if (fDist < fMinDist)
+					{
+						m_wstrPickName = to_wstring(iCellIdx) + L"_" + to_wstring(iPoint);
+						fMinDist = fDist;
+						m_bIsPick = true;
+						PickWorldMat = pCellWorldMat;
+						tPickRay = tConvertRay;
+						m_matPickWorldNav = pCellWorldMat;
+						//m_pPickTransform= pCellWorldMat;
+					}
+				}
+			}
+			pVB->Unlock();
+			pIB->Unlock();
+
+			Safe_Release(pVB);
+			Safe_Release(pIB);
+			Safe_Release(pMesh);
+			iCellIdx++;
 		}
-	//	Engine::CTransform* pTransform = dynamic_cast<Engine::CTransform*>(pStaticObject->Get_Component(L"Com_Transform", Engine::ID_DYNAMIC));
-	//	Engine::CStaticMesh* pStaticMesh = dynamic_cast<Engine::CStaticMesh*>(pComponent);
-
-	//	LPD3DXMESH pMesh;
-	//	pStaticMesh->Get_Mesh()->CloneMeshFVF(D3DXMESH_MANAGED,
-	//		pStaticMesh->Get_Mesh()->GetFVF(),
-	//		m_pGraphicDev,
-	//		&pMesh);
-	//	if (pMesh == nullptr)
-	//		continue;
-
-
-	//	_matrix pObjWorldMat = pTransform->m_matWorld;
-	//	_matrix pObjMatIvs;
-
-	//	RAY tConvertRay;
-	//	D3DXMatrixInverse(&pObjMatIvs, NULL, &pObjWorldMat);
-	//	D3DXVec3TransformCoord(&tConvertRay.vPos, &tRay.vPos, &pObjMatIvs);
-	//	D3DXVec3TransformNormal(&tConvertRay.vDir, &tRay.vDir, &pObjMatIvs);
-
-	//	LPDIRECT3DVERTEXBUFFER9 pVB;
-	//	LPDIRECT3DINDEXBUFFER9 pIB;
-	//	D3DXVECTOR3 v01, v02, v03;  // Need Convert WorldPos Value
-	//	struct VERT { D3DXVECTOR3 p; D3DXVECTOR3 n; float tu, tv; };
-
-	//	WORD*  pIndices;
-	//	VERT*  pVertices;
-	//	pMesh->GetVertexBuffer(&pVB);
-	//	pMesh->GetIndexBuffer(&pIB);
-
-	//	pIB->Lock(0, 0, (void**)&pIndices, 0);
-	//	pVB->Lock(0, 0, (void**)&pVertices, 0);
-	//	_float fU, fV, fDist;
-
-	//	for (UINT i = 0; i < pMesh->GetNumFaces(); i++)
-	//	{
-	//		D3DXVECTOR3 v0 = pVertices[pIndices[3 * i + 0]].p;
-	//		D3DXVECTOR3 v1 = pVertices[pIndices[3 * i + 1]].p;
-	//		D3DXVECTOR3 v2 = pVertices[pIndices[3 * i + 2]].p;
-
-	//		if (D3DXIntersectTri(&v0, &v1, &v2, &tConvertRay.vPos, &tConvertRay.vDir, &fU, &fV, &fDist))
-	//		{
-	//			if (fDist < fMinDist)
-	//			{
-	//				m_wstrPickName = pStaticObject->Get_ObjName() + L"_" + to_wstring(pStaticObject->Get_ObjIdx());
-	//				fMinDist = fDist;
-	//				m_bIsPick = true;
-	//				PickWorldMat = pObjWorldMat;
-	//				tPickRay = tConvertRay;
-	//				m_pPickTransform = pTransform;
-	//			}
-	//		}
-	//	}
-
-	//	pVB->Unlock();
-	//	pIB->Unlock();
-
-	//	Safe_Release(pVB);
-	//	Safe_Release(pIB);
-	//	Safe_Release(pMesh);
-
-	//}
-	//if (m_bIsPick)
-	//{
-	//	m_vPickPos = tPickRay.vPos + tPickRay.vDir * fMinDist;
-	//	D3DXVec3TransformCoord(&m_vPickPos, &m_vPickPos, &PickWorldMat);
 	}
+	if (m_bIsPick)
+	{
+		m_vPickPos = tPickRay.vPos + tPickRay.vDir * fMinDist;
+		D3DXVec3TransformCoord(&m_vPickPos, &m_vPickPos, &PickWorldMat);
 
+		cout << m_vPickPos.x << m_vPickPos.y << m_vPickPos.z << endl;
+	}
 
 }
 
