@@ -23,8 +23,8 @@ public:
 	void				Render_NaviMesh(void);
 	_vec3				Move_OnNaviMesh(const _vec3* pTargetPos, const _vec3* pTargetDir);
 
-private:
 	HRESULT				Link_Cell(void);
+//private:
 
 private:
 #ifdef _DEBUG

@@ -81,24 +81,27 @@ HRESULT Engine::CCell::Ready_Cell(const _ulong& dwIndex, const _vec3* pPointA, c
 	VTXCOL* pVertices = nullptr;
 
 	D3DXCreateSphere(m_pGraphicDev, 1.f, 10, 10, &pSphereMesh, nullptr);
+
 	for (int i = 0; i < POINT_END; i++)
 	{	
+		LPDIRECT3DVERTEXBUFFER9 pSphereBuffer ;
+
 		m_tSphereData[i].fRadius = NAV_RADIUS;
 		m_tSphereData[i].vPosition = m_vPoint[i];
 		pSphereMesh->CloneMeshFVF(0, FVF_COL, m_pGraphicDev, &m_pSphereMesh[i]);
-		m_pSphereMesh[i]->GetVertexBuffer(&m_pSphereBuffer[i]);
+		m_pSphereMesh[i]->GetVertexBuffer(&pSphereBuffer);
 		_uint uiNumVtx = m_pSphereMesh[i]->GetNumVertices();
 
-		m_pSphereBuffer[i]->Lock(0, 0, (void**)&pVertices, 0);
+		pSphereBuffer->Lock(0, 0, (void**)&pVertices, 0);
 
 		for (_uint i = 0; i < uiNumVtx; i++)
 			pVertices[i].dwColor = D3DCOLOR_RGBA(0, 255, 0, 255);
 
-		m_pSphereBuffer[i]->Unlock();
-		m_pSphereBuffer[i]->Release();
+		pSphereBuffer->Unlock();
+		pSphereBuffer->Release();
 
 	}
-	//pSphereMesh->Release();
+	pSphereMesh->Release();
 
 
 #ifdef _DEBUG
@@ -246,6 +249,8 @@ void Engine::CCell::Free(void)
 {
 	for (_uint i = 0; i < LINE_END; ++i)
 		Safe_Release(m_pLine[i]);
+	for (_uint i = 0; i < POINT_END; i++)
+		Safe_Release(m_pSphereMesh[i]);
 
 	Safe_Release(m_pD3DXLine);
 	Safe_Release(m_pGraphicDev);

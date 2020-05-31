@@ -216,7 +216,6 @@ _bool CLoading::Mesh_Loading() //텍스트 읽고와서 메쉬 로딩
 			if (Engine::Ready_Meshes(m_pGraphicDev,	RESOURCE_STAGE,pPathInfo->wstrObjectType.c_str(),Engine::TYPE_STATIC,pPathInfo->wstrRelative.c_str(),pPathInfo->wstrName.c_str()) < 0)
 			{
 				wstring wstr =L"Loading.cpp ReadyMesh Failed!!!  Object =" + pPathInfo->wstrObjectType;
-
 				DE_COUT(wstr.c_str())
 				continue;
 			}

@@ -50,6 +50,7 @@ void CNavMeshTool::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CNavMeshTool, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON1, &CNavMeshTool::OnNavMeshCreateButton)
 	ON_NOTIFY(TVN_SELCHANGED, IDC_TREE1, &CNavMeshTool::OnSelectNavMesh)
+	ON_BN_CLICKED(IDC_BUTTON2, &CNavMeshTool::OnBnClickedDeleteButton)
 END_MESSAGE_MAP()
 
 void CNavMeshTool::OnNavMeshCreateButton()
@@ -126,11 +127,13 @@ HRESULT CNavMeshTool::Update(const _float & fTimeDelta)
 		{
 			m_vPos = m_pCamera->Get_PickPos();
 			m_bIsColl = true;
+	
 		}
 		else if (m_pCamera->IsNavPick())
 		{
 			m_vPos = m_pCamera->Get_PickPos();
 			m_bIsColl = true;
+
 		}
 
 		if (m_bIsColl)
@@ -189,7 +192,7 @@ void CNavMeshTool::Set_NavMeshData()
 	if(m_pCamera->IsPick())
 		(*m_ppCellVec)[m_uiSelectNavIdx]->Set_NaviData(*m_pNavDataVec[m_uiSelectNavIdx]);
 
-
+	m_pNaviCom->Link_Cell();
 	//dynamic_cast<CTestStage*>(m_pScene)->Set_MeshVec(m_pNavDataVec);
 			
 }
@@ -204,7 +207,7 @@ BOOL CNavMeshTool::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
-	m_hRoot= m_NavMeshTree.InsertItem(TEXT("NavMesh"), 0, 0, TVI_ROOT, TVI_LAST);
+	m_hRoot = m_NavMeshTree.InsertItem(TEXT("NavMesh"), 0, 0, TVI_ROOT, TVI_LAST);
 
 	if (m_pDeviceClass == nullptr)
 	{
@@ -269,4 +272,60 @@ void CNavMeshTool::OnOK()
 void CNavMeshTool::OnCancel()
 {
 	//CDialogEx::OnCancel();
+}
+
+
+void CNavMeshTool::OnBnClickedDeleteButton()
+{
+	int i = 0;
+	for (auto itr = (*m_ppCellVec).begin(); itr != (*m_ppCellVec).end();i++)
+	{
+		if (m_uiSelectNavIdx == i)
+		{
+			(*itr)->Release();
+			itr = (*m_ppCellVec).erase(itr);
+			break;
+		}
+		else
+			itr++;
+	}
+
+	_uint uiNavIdx;
+	uiNavIdx = m_ppCellVec->size();
+	m_NavMeshTree.DeleteAllItems();
+	m_hRoot = m_NavMeshTree.InsertItem(TEXT("NavMesh"), 0, 0, TVI_ROOT, TVI_LAST);
+
+	if (m_ppCellVec != nullptr)
+	{
+		_uint uiCellIdx= 0;
+		for (auto pCell : (*m_ppCellVec))
+		{
+			Engine::NAVI_DATA* pNaviData = &pCell->Get_NaviData();
+			memset(pNaviData, 0, sizeof(Engine::NAVI_DATA));
+			//pNaviData->uiIdx = 0;
+			//pNaviData->vPosition1 = {0.f,0.f,0.f};
+			//pNaviData->vPosition2 = {0.f,0.f,0.f};
+			//pNaviData->vPosition3 = {0.f,0.f,0.f};
+			//pNaviData->uiIdx=(*m_ppCellVec).size();
+
+			pNaviData->uiIdx = uiCellIdx;
+
+			CString csTemp;
+			csTemp.Format(_T("Nav%d"), pNaviData->uiIdx);
+
+			m_hNavMeshIdx = m_NavMeshTree.InsertItem(csTemp, 0, 0, m_hRoot, TVI_LAST);
+			csTemp.Format(_T("%d (X= %f  Y= %f  Z=%f)"), 0, pNaviData->vPosition1.x, pNaviData->vPosition1.y, pNaviData->vPosition1.z);
+			m_hNavMeshPoint = m_NavMeshTree.InsertItem(csTemp, 0, 0, m_hNavMeshIdx, TVI_LAST);
+
+			csTemp.Format(_T("%d (X= %f  Y= %f  Z=%f)"), 1, pNaviData->vPosition2.x, pNaviData->vPosition2.y, pNaviData->vPosition2.z);
+			m_hNavMeshPoint = m_NavMeshTree.InsertItem(csTemp, 0, 0, m_hNavMeshIdx, TVI_LAST);
+
+			csTemp.Format(_T("%d (X= %f  Y= %f  Z=%f)"), 2, pNaviData->vPosition3.x, pNaviData->vPosition3.y, pNaviData->vPosition3.z);
+			m_hNavMeshPoint = m_NavMeshTree.InsertItem(csTemp, 0, 0, m_hNavMeshIdx, TVI_LAST);
+			uiCellIdx++;
+		}
+	}
+
+
+
 }

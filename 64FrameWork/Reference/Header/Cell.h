@@ -53,9 +53,7 @@ private:
 
 	LPD3DXMESH				m_pSphereMesh[POINT_END] = { nullptr,nullptr,nullptr };
 	SPHERE_DATA				m_tSphereData[POINT_END];
-	BYTE*					m_pbySphere[POINT_END];
 	_matrix					m_matSphereWorld[POINT_END];
-	LPDIRECT3DVERTEXBUFFER9 m_pSphereBuffer[POINT_END] = { nullptr,nullptr,nullptr };
 	
 	LPD3DXLINE				m_pD3DXLine;
 	_ulong					m_dwIndex;
